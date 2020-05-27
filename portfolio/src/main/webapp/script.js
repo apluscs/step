@@ -17,7 +17,7 @@
  */
 function addRandomGreeting() {
   const greetings =
-      ['Hello world!', '¡Hola Mundo!', '你好，世界！', 'Bonjour le monde!'];
+      ['Canada by Lauv', 'Slow Dance by AJ Mitchell', 'Let it Be Me by Steve Aoki & Backstreet Boys', 'Whenever by Conor Maynard'];
 
   // Pick a random greeting.
   const greeting = greetings[Math.floor(Math.random() * greetings.length)];
