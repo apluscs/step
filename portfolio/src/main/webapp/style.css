@@ -55,7 +55,7 @@
     top: 50%;
 }
 
-.header{
+.header, footer{
     text-align: center;
 }
 
