@@ -1,9 +1,41 @@
 #content {
   margin-left: auto;
   margin-right: auto;
-  width: 650px;
+  width: 70%;
 }
 
 #greeting-container {
   margin-top: 20px;
+}
+
+.card-container {
+    perspective: 700px;
+}
+
+.card-flip, .card-container {
+    transform-style: preserve-3d;
+    transition: all 0.7s ease;
+}
+
+.card-flip div {
+    backface-visibility: hidden;
+    transform-style: preserve-3d;
+}
+
+.back {
+    transform: rotateY(-180deg);
+}
+
+.card-container:hover .card-flip {
+    transform: rotateY(180deg);
+}
+.card-img-top{
+    height:100%;
+    object-fit: cover;
+}
+.card{
+    height: 300px;
+}
+.card.front{
+    position: absolute;
 }

@@ -6,6 +6,9 @@
 	<title>My Portfolio</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 	<link rel="stylesheet" href="style.css">
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
 	<script src="script.js"></script>
 </head>
 
@@ -18,23 +21,80 @@
         <a href=" https://github.com/apluscs "> <img src="https://img.icons8.com/material-outlined/48/000000/github.png"/> </a>
         <a href="https://www.linkedin.com/in/claireyang/< "> <img src="https://img.icons8.com/color/48/000000/linkedin.png"/> </a>
         
-        <h3> Click on each Card to Learn More about my Life </h3>
         <!-- TODO: make these cards -->
         <h3> Programming Journey </h3>
-        <ul> 
-            <li>2018: Took AP Computer Science my junior year of high school, Java became my first programming language</li>
-            <li>2019: Had absolutely nothing to do senior year of high school, so I looked into competitive programming and realized I really liked doing it. Spent many hours on USACO's training sets </li>
-            <li>2019: Did a local website competition with my sister and won! </li>
-            <li>2019: Competed in my first hackathon and made <a href="http://rumble-speechdiary.appspot.com/">ramble </a> </li>
-            <li>2020: First year of college: declared major in Computer Science... favorite courses were Discrete Mathematics and Data Structures & Algorithms </li>
-            <li>2020: Now a Google STEP intern! </li>
-        </ul>
 
+ 
+        <h5>2018</h5>
+        <p>Took AP Computer Science my junior year of high school, Java became my first programming language</p>
+
+        <h5>2019</h5>
+        <p> Had an abundance of time senior year, so I looked into competitive programming and realized I really liked doing it. Spent many hours on USACO's training sets</p>
+
+        <h5>2019</h5>
+        <p>Did a local website competition with my sister and won!</p>
+
+        <h5>2019</h5>
+        <p>Competed in my first hackathon and made <a href="http://rumble-speechdiary.appspot.com/">ramble </a></p>
+
+        <h5>2020</h5>
+        <p>First year of college: declared major in Computer Science... favorite courses were Discrete Mathematics and Data Structures & Algorithms </p>
+
+        <h5>2020</h5>
+        <p>Now a Google STEP intern!</p>
+ 
+        <br><br>
+        
         <!-- TODO: add pictures and text  -->
-        <h3> Happy Moments from my Life </h3> 
-        <img src="images/me.png" >
+        <h3> Click on each Card to Learn More about my Life </h3>
+        <div class="container">
+            <div class="row ">
+                <div class="col card-container">
+                    <div class="card-flip">
+                        <div class="card front">
+
+                            <img class ="card-img-top" src="images/me.png" >
+                        </div>
+                        <div class=" card back">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="card-title">Pointillistic dot drawing I spent weeks on</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col card-container">
+                    <div class="card-flip ">
+                        <div class="card front">
+                            <img class="card-img-top" src="images/me2.jpg" >
+                        </div>
+                        <div class=" card back">
+                            <div class="card-body">
+                                <h6 class="card-title">>Spending time with my sister during quarantine</h5>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col card-container">
+                    <div class="card-flip">
+                        <div class="card front">
+                            <img class="card-img-top" src="images/me3.jpg" >
+                        </div>
+                        <div class=" card back">
+                            <div class="card">
+                                <div class="card-body ">
+                                    <h6 class="card-title">Played piccolo in the marching band in high school!</h5>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         
+
         <!-- maybe will incorporate this back in later -->
 		<!-- <p>Click here to get one of Claire's current favorite songs:</p>
 		<button onclick="addRandomGreeting()">Hello</button>
