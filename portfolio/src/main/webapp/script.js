@@ -26,3 +26,5 @@ function addRandomGreeting() {
   const greetingContainer = document.getElementById('greeting-container');
   greetingContainer.innerText = greeting;
 }
+
+document.querySelector(".card-flip").classList.toggle("flip");
