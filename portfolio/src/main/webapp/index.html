@@ -1,49 +1,159 @@
 <!DOCTYPE html>
 <html>
-
-<head>
-	<meta charset="UTF-8">
-	<title>My Portfolio</title>
-	<link rel="stylesheet" href="style.css">
-	<script src="script.js"></script>
-</head>
-
-<body>
-	<div id="content">
-		<h1>Claire's Portfolio</h1>
-		
-		<p>This is Claire's portfolio.</p>
-        <p>Greetings! I am a Computer Science major in the University of Michigan's College of Engineering. I just completed my first year of college and absolutely loved it. I grew up in Troy, Michigan, where I am currently working. </p>
-        <a> [add icon here] https://github.com/apluscs </a>
-        <a> [add icon here] https://www.linkedin.com/in/claireyang/</a>
-        
-        <h3> Click on each Card to Learn More about my Life </h3>
-        <!-- TODO: make these cards -->
-        <h3> Programming Journey </h3>
-        <ul> 
-            <li>2018: Took AP Computer Science my junior year of high school, Java became my first programming language</li>
-            <li>2019: Had absolutely nothing to do senior year of high school, so I looked into competitive programming and realized I really liked doing it. Spent many hours on USACO's training sets </li>
-            <li>2019: Did a local website competition with my sister and won! </li>
-            <!-- TODO: add link to ramble's site  -->
-            <li>2019: Competed in my first hackathon and made ramble </li>
-            <li>2020: First year of college: declared major in Computer Science... favorite courses were Discrete Mathematics and Data Structures & Algorithms </li>
-            <li>2020: Now a Google STEP intern! </li>
-        </ul>
-
-        <!-- TODO: add pictures and text  -->
-        <h3> Happy Moments from my Life </h3> 
-        <img src="images/me.png" >
-        <h3> Favorite Books of All Time </h3>
-        <ul>    
-            <li>Grit by Angela Duckworth</li>
-            <li>Blink: The Power of Thinking Without Thinking by Malcolm Gladwell </li>
-            <li>Algorithms to Live By: The Computer Science of Human Decisions by Brian Christian and Tom Griffiths </li>
-        </ul>
-
-        <!-- maybe will incorporate this back in later -->
-		<!-- <p>Click here to get one of Claire's current favorite songs:</p>
-		<button onclick="addRandomGreeting()">Hello</button>
-		<div id="greeting-container"></div> -->
-	</div>
-</body>
+    <head>
+        <meta charset="UTF-8">
+        <title>My Portfolio</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css"
+            integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+        <link rel="stylesheet" href="style.css">
+        <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+            integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+            integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"
+            integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+        <script src="script.js"></script>
+    </head>
+    <body>
+        <div id="content">
+            <br><br>
+            <h1>Claire's Portfolio  
+                <a href=" https://github.com/apluscs ">
+                    <img src="https://img.icons8.com/material-outlined/48/000000/github.png"/> </a>
+                <a href="https://www.linkedin.com/in/claireyang/< ">
+                    <img src="https://img.icons8.com/color/48/000000/linkedin.png"/> </a>
+            </h1>
+            <p class="lead">Greetings! I am a Computer Science major in the University of Michigan's College of Engineering, where I just completed my first year of college.
+                I am currently working in my hometown, Troy, Michigan. 
+            </p>
+            <br><br>
+            <section>
+                <h3 class="header"> Programming Journey </h3>
+                <h5>2018</h5>
+                <p>Took AP Computer Science my junior year of high school, Java became my first programming language.</p>
+                <h5>2019</h5>
+                <p> Had an abundance of time senior year, so I looked into competitive programming and realized I really
+                    liked doing it. Spent many hours on USACO's training sets.
+                </p>
+                <h5>2019</h5>
+                <p>Did a local website competition with my sister and won!</p>
+                <h5>2019</h5>
+                <p>Competed in my first hackathon and made <a href="https://rumble-speechdiary.appspot.com/">ramble </a>.
+                </p>
+                <h5>2020</h5>
+                <p>First year at the University of Michigan: declared major in Computer Science. <br>
+                    Favorite courses were Discrete Mathematics and Data Structures & Algorithms. 
+                </p>
+                <h5>2020</h5>
+                <p>Now a Google STEP intern!</p>
+            </section>
+            <br><br>
+            <section>
+                <h3 class="header"> Hover Over Each Card to Learn More About My Life </h3>
+                <div class="container">
+                    <div class="row">
+                        <div class="col-6">
+                            <!-- Card Flip -->
+                            <div class="card-flip">
+                                <div class="flip">
+                                    <div class="front">
+                                        <!-- front content -->
+                                        <div class="card">
+                                            <img class="card-img-top" src="images/me.png" data-holder-rendered="true">
+                                        </div>
+                                    </div>
+                                    <div class="back">
+                                        <!-- back content -->
+                                        <div class="card">
+                                            <div class="card-block">
+                                                <h6 class="card-subtitle text-muted">This was a painting I did my junior year of high school. It is composed entirely of dots and took me a long time to make. The lesson learned was that greatness is built up in small doses.</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Card Flip -->
+                        </div>
+                        <div class="col-6">
+                            <!-- Card Flip -->
+                            <div class="card-flip">
+                                <div class="flip">
+                                    <div class="front">
+                                        <!-- front content -->
+                                        <div class="card">
+                                            <img class="card-img-top" src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Eucalyp-Deus_Books.png" data-holder-rendered="true">
+                                        </div>
+                                    </div>
+                                    <div class="back">
+                                        <!-- back content -->
+                                        <div class="card">
+                                            <div class="card-block">
+                                                <h6 class="card-subtitle text-muted mb-2 ">I like to read! My favorite books are: </h6>
+                                                <ul class="list-group">
+                                                    <li class="list-group-item books-card card-subtitle text-muted">Grit: The Power of Passion and Perseverance by Angela Duckworth</li>
+                                                    <li class="list-group-item books-card card-subtitle text-muted">Algorithms to Live By: The Computer Science of Human Decisions by Brian Christian and Tom Griffiths</li>
+                                                    <li class="list-group-item books-card card-subtitle text-muted">Blink: The Power of Thinking Without Thinking by Malcolm Gladwell</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Card Flip -->
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-6">
+                            <!-- Card Flip -->
+                            <div class="card-flip">
+                                <div class="flip">
+                                    <div class="front">
+                                        <!-- front content -->
+                                        <div class="card">
+                                            <img class="card-img-top" src="images/me2.jpg" data-holder-rendered="true">
+                                        </div>
+                                    </div>
+                                    <div class="back">
+                                        <!-- back content -->
+                                        <div class="card">
+                                            <div class="card-block">
+                                                <h6 class="card-subtitle text-muted">My sister is an awesome human being, and she made quarantine significantly more fun.</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Card Flip -->
+                        </div>
+                        <div class="col-6">
+                            <!-- Card Flip -->
+                            <div class="card-flip">
+                                <div class="flip">
+                                    <div class="front">
+                                        <!-- front content -->
+                                        <div class="card">
+                                            <img class="card-img-top" src="https://upload.wikimedia.org/wikipedia/commons/3/31/Sudoku_distinction_of_cases.PNG" data-holder-rendered="true">
+                                        </div>
+                                    </div>
+                                    <div class="back">
+                                        <!-- back content -->
+                                        <div class="card">
+                                            <div class="card-block">
+                                                <h6 class="card-subtitle text-muted">One of my favorite games to play in my free time is Sudoku.</h6>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Card Flip -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <br><br><br><br>
+            <footer>
+                <p class="footer-citation"> Github and LinkedIn icons by <a href="https://icons8.com/"> icons8 </p>
+            </footer>
+        </div>
+    </body>
 </html>
