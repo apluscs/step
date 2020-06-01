@@ -29,8 +29,8 @@ function getRandomQuote() {
  * Handles response by converting it to text and passing the result to
  * addQuoteToDom().
  */
-function handleResponse(response) { // what the fetch returned (passed into resolve)
-  console.log('Handling the response.' + response); 
+function handleResponse(response) {
+  console.log('Handling the response:' + response); 
 
   // response.text() returns a Promise, because the response is a stream of
   // content and not a simple variable.
@@ -42,7 +42,7 @@ function handleResponse(response) { // what the fetch returned (passed into reso
 }
 
 /** Adds a random quote to the DOM. */
-function addQuoteToDom(quote) { // quote is what response.text() returned
+function addQuoteToDom(quote) {
   console.log('Adding quote to dom: ' + quote);
 
   const quoteContainer = document.getElementById('quote-container');
