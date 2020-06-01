@@ -12,6 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+window.onload = () => { 
+  fetch('/random-greeting').then((response) => {
+    console.log("got the response")
+    return response.text();
+  }).then((greeting) => {
+    console.log('Adding greeting to dom: ' + greeting);
+    document.getElementById('greeting-container').innerText = greeting;
+  })
+}
 
 function getMessages() {
   fetch('/data').then(response => response.json()).then((messages) => {
@@ -24,4 +33,4 @@ function createListElement(text) {
   const liElement = document.createElement('li');
   liElement.innerText = text;
   return liElement;
-}
+
