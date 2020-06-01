@@ -29,8 +29,8 @@ function getRandomQuote() {
  * Handles response by converting it to text and passing the result to
  * addQuoteToDom().
  */
-function handleResponse(response) {
-  console.log('Handling the response.');
+function handleResponse(response) { // what the fetch returned (passed into resolve)
+  console.log('Handling the response.' + response); 
 
   // response.text() returns a Promise, because the response is a stream of
   // content and not a simple variable.
@@ -42,7 +42,7 @@ function handleResponse(response) {
 }
 
 /** Adds a random quote to the DOM. */
-function addQuoteToDom(quote) {
+function addQuoteToDom(quote) { // quote is what response.text() returned
   console.log('Adding quote to dom: ' + quote);
 
   const quoteContainer = document.getElementById('quote-container');
@@ -55,9 +55,13 @@ function addQuoteToDom(quote) {
  * combines all of the above code into a single Promise chain. You can use
  * whichever syntax makes the most sense to you.
  */
-function getRandomQuoteUsingArrowFunctions() {
-  fetch('/random-quote').then(response => response.text()).then((quote) => {
-    document.getElementById('quote-container').innerText = quote;
+getRandomQuoteUsingArrowFunctions = () => {
+    fetch('/random-quote').then((response) => {
+        console.log('Handling the response.' + response); 
+        return response.text();
+    }).then((quote) => {
+        console.log('Adding quote to dom: ' + quote);
+        document.getElementById('quote-container').innerText = quote;
   });
 }
 
