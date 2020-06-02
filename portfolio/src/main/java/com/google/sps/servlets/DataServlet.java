@@ -54,7 +54,6 @@ public class DataServlet extends HttpServlet {
     comments.add(new Comment(
       request.getParameter("user_email"), 
       request.getParameter("user_comment")));
-    response.sendRedirect("/comments.html");
     
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("email", request.getParameter("user_email"));
