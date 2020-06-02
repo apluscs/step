@@ -48,8 +48,9 @@ public class DataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String userEmail = request.getParameter("user_email"), userComment = request.getParameter("user_comment");
-    comments.add(new Comment(userEmail, userComment));
+    comments.add(new Comment(
+      request.getParameter("user_email"), 
+      request.getParameter("user_comment")));
     response.sendRedirect("/comments.html");
   }
 }
