@@ -20,11 +20,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
-<<<<<<< HEAD
-=======
-import java.util.Arrays;
 import com.google.gson.Gson;
->>>>>>> 3b28482e2e74d41c98751ad9ff8412824b4a819f
 
 /** Servlet that returns some example content. TODO: modify this file to handle comments data */
 @WebServlet("/data")
@@ -40,10 +36,12 @@ public class DataServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
+    String comments_json = convertToJsonUsingGson(comments);
+    response.setContentType("application/json;");
+    response.getWriter().println(comments_json);
   }
   
-  private String convertToJsonUsingGson(ArrayList<String> arr) {
+  private String convertToJsonUsingGson(ArrayList<Comment> arr) {
     Gson gson = new Gson();
     String json = gson.toJson(arr);
     return json;
@@ -55,6 +53,6 @@ public class DataServlet extends HttpServlet {
     String user_email = request.getParameter("user_email");
     String user_comment = request.getParameter("user_comment");
     comments.add(new Comment(user_email, user_comment));
-    response.sendRedirect("/index.html");
+    response.sendRedirect("/comments.html");
   }
 }

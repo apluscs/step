@@ -34,6 +34,13 @@ function createCommentElement(email, comment) {
   add_class(card_body, "card-body");
   card.appendChild(card_body)
   console.log("created card body")
+
+  
+  var title = document.createElement("h6"); 
+  title.innerHTML = "From: " + email;
+  add_class(title, "card-title")
+  card_body.appendChild(title);
+  console.log("created card title")
   
     
   var text = document.createElement("p"); 
@@ -41,13 +48,6 @@ function createCommentElement(email, comment) {
   add_class(text, "card-text")
   card_body.appendChild(text);
   console.log("created card text")
-  
-  var title = document.createElement("h6"); 
-  title.innerHTML = "From: " + email;
-  add_class(title, "card-title")
-  card_body.appendChild(title);
-  console.log("created card title")
-
 
   return card;
 }
