@@ -20,23 +20,4 @@ window.onload = () => {
     console.log('Adding greeting to dom: ' + greeting);
     document.getElementById('greeting-container').innerText = greeting;
   });
-  
-  fetch('/data').then(response => response.json()).then((messages) => {
-    console.log(messages);
-    const comments_list = document.getElementById('comments-container');
-    comments_list.innerHTML = '';
-    comments_list.appendChild(
-        createListElement('Comment: ' + messages[0]));
-    comments_list.appendChild(
-        createListElement('Comment: ' + messages[1]));
-    comments_list.appendChild(
-        createListElement('Comment: ' + messages[2]));
-  });
-}
-
-/** Creates an <li> element containing text. */
-function createListElement(text) {
-  const liElement = document.createElement('li');
-  liElement.innerText = text;
-  return liElement;
 }
