@@ -19,15 +19,32 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 
 /** Servlet that returns some example content. TODO: modify this file to handle comments data */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
+  class Comment {
+    String email, comment;
+    public Comment(String email, String comment){
+      this.email=email;
+      this.comment=comment;
+    }
+  }
+  ArrayList<Comment> comments = new ArrayList<Comment>();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setContentType("text/html;");
     response.getWriter().println("<h1>Hello Claire!</h1>");
   }
+  
+    @Override
+  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+    String user_email = request.getParameter("user_email");
+    String user_comment = request.getParameter("user_comment");
+    comments.add(new Comment(user_email, user_comment));
+    response.sendRedirect("/index.html");
+  }
 }
