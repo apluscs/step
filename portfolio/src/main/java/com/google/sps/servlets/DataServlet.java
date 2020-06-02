@@ -42,17 +42,15 @@ public class DataServlet extends HttpServlet {
     response.getWriter().println(commentsJson);
   }
   
-  private String convertToJsonUsingGson(List<Comment> arr) {
+  private static String convertToJsonUsingGson(List<Comment> comments) {
     Gson gson = new Gson();
-    String json = gson.toJson(arr);
+    String json = gson.toJson(comments);
     return json;
   }
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
-    String userEmail = request.getParameter("user_email");
-    String userComment = request.getParameter("user_comment");
+    String userEmail = request.getParameter("user_email"), userComment = request.getParameter("user_comment");
     comments.add(new Comment(userEmail, userComment));
     response.sendRedirect("/comments.html");
   }

@@ -12,7 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-window.onload = () => { 
+window.onload = loadComments();
+
+function loadComments(){
   fetch('/data').then(response => response.json()).then((comments) => {
     console.log(comments);
     const comments_list = document.getElementById('comments-container');
