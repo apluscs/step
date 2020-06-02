@@ -16,42 +16,42 @@ window.onload = loadComments();
 
 function loadComments(){
   fetch('/data').then(response => response.json()).then((comments) => {
-    console.log(comments);
-    const comments_list = document.getElementById('comments-container');
-    comments_list.innerHTML = '';
+    debugLog(comments);
+    const commentsList = document.getElementById('comments-container');
+    commentsList.innerHTML = '';
     comments.forEach((comment) => {
-      comments_list.appendChild(createCommentElement(comment.email,comment.comment));
+      commentsList.appendChild(createCommentElement(comment.email, comment.comment));
     });
   });
 }
 
 /** Creates an <li> element containing text. */
 function createCommentElement(email, comment) {
-  var card = document.createElement("div"); 
-  add_class(card, "card");
+  const card = document.createElement("div"); 
+  addClass(card, "card");
   debugLog("created card")
   
-  var card_body = document.createElement("div"); 
-  add_class(card_body, "card-body");
-  card.appendChild(card_body)
+  const cardBody = document.createElement("div"); 
+  addClass(cardBody, "card-body");
+  card.appendChild(cardBody)
   debugLog("created card body")
   
-  var title = document.createElement("h6"); 
+  const title = document.createElement("h6"); 
   title.innerHTML = "From: " + email;
-  add_class(title, "card-title")
-  card_body.appendChild(title);
+  addClass(title, "card-title")
+  cardBody.appendChild(title);
   debugLog("created card title")
     
-  var text = document.createElement("p"); 
+  const text = document.createElement("p"); 
   text.innerHTML = comment;
-  add_class(text, "card-text")
-  card_body.appendChild(text);
+  addClass(text, "card-text")
+  cardBody.appendChild(text);
   debugLog("created card text")
   return card;
 }
 
-function add_class(element, attribute){
-  var att = document.createAttribute("class");  
+function addClass(element, attribute){
+  const att = document.createAttribute("class");  
   att.value = attribute;                           
   element.setAttributeNode(att);  
 }

@@ -33,19 +33,17 @@ public class DataServlet extends HttpServlet {
       this.comment = comment;
     }
   }
-  List<Comment> comments = new ArrayList<Comment>();
+  private List<Comment> comments = new ArrayList<Comment>();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    String commentsJson = convertToJsonUsingGson(comments);
     response.setContentType("application/json;");
-    response.getWriter().println(commentsJson);
+    response.getWriter().println(convertToJsonUsingGson(comments));
   }
   
   private static String convertToJsonUsingGson(List<Comment> comments) {
     Gson gson = new Gson();
-    String json = gson.toJson(comments);
-    return json;
+    return gson.toJson(comments);
   }
   
   @Override
