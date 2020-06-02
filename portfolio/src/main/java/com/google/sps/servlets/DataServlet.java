@@ -17,6 +17,9 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.SortDirection;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -36,10 +39,17 @@ public class DataServlet extends HttpServlet {
       this.comment = comment;
     }
   }
-  private List<Comment> comments = new ArrayList<Comment>();
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Query query = new Query("Comment");
+    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    PreparedQuery results = datastore.prepare(query);
+    List<Comment> comments = new ArrayList<Comment>();
+    for(Entity comment : results.asIterable()){
+      comments.add(new Comment((String)comment.getProperty("email"), 
+                               (String)comment.getProperty("comment")));
+    }
     response.setContentType("application/json;");
     response.getWriter().println(convertToJsonUsingGson(comments));
   }
@@ -51,13 +61,10 @@ public class DataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    comments.add(new Comment(
-      request.getParameter("user_email"), 
-      request.getParameter("user_comment")));
-    
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("email", request.getParameter("user_email"));
     commentEntity.setProperty("comment", request.getParameter("user_comment"));
+    // commentEntity.setProperty("time", System.currentTimeMillis();    
     DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
