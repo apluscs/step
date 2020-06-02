@@ -19,5 +19,7 @@ window.onload = () => {
   }).then((greeting) => {
     console.log('Adding greeting to dom: ' + greeting);
     document.getElementById('greeting-container').innerText = greeting;
-  })
+  });
+  
+  
 }
