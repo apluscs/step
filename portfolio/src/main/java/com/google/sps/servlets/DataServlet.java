@@ -20,6 +20,8 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,10 +35,11 @@ import com.google.gson.Gson;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   private static class Comment {
-    private String email, comment;
-    public Comment(String email, String comment){
+    private String email, comment, time;
+    public Comment(String email, String comment, String time){
       this.email = email;
       this.comment = comment;
+      this.time = time;
     }
   }
 
@@ -47,8 +50,11 @@ public class DataServlet extends HttpServlet {
     PreparedQuery results = datastore.prepare(query);
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results.asIterable()){
+      SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");    
+      Date resultdate = new Date((Long)comment.getProperty("time"));
       comments.add(new Comment((String)comment.getProperty("email"), 
-                               (String)comment.getProperty("comment")));
+                               (String)comment.getProperty("comment"),
+                               sdf.format(resultdate)));
     }
     response.setContentType("application/json;");
     response.getWriter().println(convertToJsonUsingGson(comments));
