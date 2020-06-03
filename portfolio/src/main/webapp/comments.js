@@ -20,13 +20,13 @@ function loadComments(){
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
     comments.forEach((comment) => {
-      commentsList.appendChild(createCommentElement(comment.email, comment.comment));
+      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
     });
   });
 }
 
 /** Creates an <li> element containing text. */
-function createCommentElement(email, comment) {
+function createCommentElement(email, comment, time) {
   const card = document.createElement("div"); 
   addClass(card, "card");
   debugLog("created card")
@@ -47,6 +47,13 @@ function createCommentElement(email, comment) {
   addClass(text, "card-text")
   cardBody.appendChild(text);
   debugLog("created card text")
+  
+  const timeText = document.createElement("small"); 
+  timeText.innerHTML = time;
+  addClass(timeText, "card-text")
+  cardBody.appendChild(timeText);
+  debugLog("created card time")
+  
   return card;
 }
 

@@ -17,6 +17,11 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.PreparedQuery;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.Query.SortDirection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -26,22 +31,42 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson;
 
-/** Servlet that returns some example content. TODO: modify this file to handle comments data */
+/** Servlet that handles comments data */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   private static class Comment {
-    private String email, comment;
-    public Comment(String email, String comment){
+    private final String email, comment, date;
+    public Comment(String email, String comment, String date){
       this.email = email;
       this.comment = comment;
+      this.date = date;
     }
   }
-  private List<Comment> comments = new ArrayList<Comment>();
-
+  private DatastoreService datastore;
+  private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  
+  @Override
+  public void init() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
+    PreparedQuery results = datastore.prepare(comments_query);
+    List<Comment> comments = new ArrayList<Comment>();
+    for(Entity comment : results.asIterable()){
+      comments.add(makeComment(comment));
+    }
     response.setContentType("application/json;");
     response.getWriter().println(convertToJsonUsingGson(comments));
+  }
+  
+  private static Comment makeComment(Entity comment){
+    SimpleDateFormat sdf = new SimpleDateFormat();    
+    Date resultDate = new Date((Long)comment.getProperty("time_millis"));
+    return new Comment( (String)comment.getProperty("email"), 
+                        (String)comment.getProperty("comment"),
+                        sdf.format(resultDate));
   }
   
   private static String convertToJsonUsingGson(List<Comment> comments) {
@@ -51,14 +76,10 @@ public class DataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    comments.add(new Comment(
-      request.getParameter("user_email"), 
-      request.getParameter("user_comment")));
-    
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("email", request.getParameter("user_email"));
     commentEntity.setProperty("comment", request.getParameter("user_comment"));
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+    commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
   }
