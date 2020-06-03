@@ -31,33 +31,38 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson;
 
-/** Servlet that returns some example content. TODO: modify this file to handle comments data */
+/** Servlet that handles comments data */
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   private static class Comment {
-    private String email, comment, time;
+    private final String email, comment, time;
     public Comment(String email, String comment, String time){
       this.email = email;
       this.comment = comment;
       this.time = time;
     }
   }
-
+  private Query comments_query = new Query("Comment").addSort("time", SortDirection.DESCENDING);
+  private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+  private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query query = new Query("Comment").addSort("time", SortDirection.DESCENDING);;
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-    PreparedQuery results = datastore.prepare(query);
+    PreparedQuery results = datastore.prepare(comments_query);
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results.asIterable()){
-      SimpleDateFormat sdf = new SimpleDateFormat("MMM dd,yyyy HH:mm");    
-      Date resultdate = new Date((Long)comment.getProperty("time"));
-      comments.add(new Comment((String)comment.getProperty("email"), 
-                               (String)comment.getProperty("comment"),
-                               sdf.format(resultdate)));
+      comments.add(makeComment(comment));
     }
     response.setContentType("application/json;");
     response.getWriter().println(convertToJsonUsingGson(comments));
+  }
+  
+  private static Comment makeComment(Entity comment){
+    SimpleDateFormat sdf = new SimpleDateFormat();    
+    Date resultDate = new Date((Long)comment.getProperty("time"));
+    return new Comment( (String)comment.getProperty("email"), 
+                        (String)comment.getProperty("comment"),
+                        sdf.format(resultDate));
   }
   
   private static String convertToJsonUsingGson(List<Comment> comments) {
@@ -71,7 +76,6 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("email", request.getParameter("user_email"));
     commentEntity.setProperty("comment", request.getParameter("user_comment"));
     commentEntity.setProperty("time", System.currentTimeMillis());    
-    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
   }
