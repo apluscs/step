@@ -20,6 +20,7 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.Key;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.IOException;
@@ -34,7 +35,7 @@ import com.google.appengine.api.datastore.FetchOptions;
 
 /** Servlet that handles comments data */
 @WebServlet("/delete-data")
-public class DataServlet extends HttpServlet {
+public class DeleteDataServlet extends HttpServlet {
   private static class Comment {
     private final String email, comment, time;
     public Comment(String email, String comment, String time){
@@ -43,8 +44,13 @@ public class DataServlet extends HttpServlet {
       this.time = time;
     }
   }
-  private Query comments_query = new Query("Comment").setKeysOnly();
+ 
   private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+  
+  @Override
+  public void init() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
   
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -66,6 +72,11 @@ public class DataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
+    Query commentKeysQuery = new Query("Comment").setKeysOnly();
+    PreparedQuery commentKeysResults =  datastore.prepare(commentKeysQuery);
+    // System.out.println("doGet of delete data servlet called ");
+    for(Entity commentKey : commentKeysResults.asIterable()){
+      datastore.delete(commentKey.getKey());
+    }
   }
 }
