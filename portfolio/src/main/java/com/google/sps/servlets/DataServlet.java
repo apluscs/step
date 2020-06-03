@@ -30,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson;
+import com.google.appengine.api.datastore.FetchOptions;
 
 /** Servlet that handles comments data */
 @WebServlet("/data")
@@ -51,10 +52,11 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    int maxComments = Integer.parseInt(request.getParameter("max_comments"));
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    PreparedQuery results = datastore.prepare(comments_query);
+    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments));
     List<Comment> comments = new ArrayList<Comment>();
-    for(Entity comment : results.asIterable()){
+    for(Entity comment : results){
       comments.add(makeComment(comment));
     }
     response.setContentType("application/json;");

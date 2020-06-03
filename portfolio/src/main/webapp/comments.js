@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-window.onload = loadComments();
-
 function loadComments(){
-  fetch('/data').then(response => response.json()).then((comments) => {
+  const maxComments = parseInt(document.getElementById("max-comments-select").value);
+  debugLog(maxComments);
+  fetch("/data" + "?max_comments=" + maxComments).then(response => response.json()).then((comments) => {
     debugLog(comments);
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
@@ -64,7 +64,7 @@ function addClass(element, attribute){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }

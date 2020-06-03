@@ -14,7 +14,7 @@
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="comments.js"></script>
   </head>
-  <body>
+  <body onload=loadComments()>
     <div id="content">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="collapse navbar-collapse" id="navbarText">
@@ -46,6 +46,16 @@
       <br><br>
       <section>
         <h3 class="header"> Comments </h3>
+        <div class="input-group mb-3">
+          <div class="input-group-prepend">
+            <label class="input-group-text" for="max-comments-select">Set max number of comments: </label>
+          </div>
+          <select class="custom-select" id="max-comments-select" onchange="loadComments()">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+          </select>
+        </div>
         <ul id="comments-container"></ul>
       </section>
     </div>
