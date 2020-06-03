@@ -13,14 +13,14 @@
 // limitations under the License.
 
 function loadComments(){
-  const maxComments = document.getElementById("max-comments-select").value;
+  const maxComments = parseInt(document.getElementById("max-comments-select").value);
   debugLog(maxComments);
   fetch("/data" + "?max_comments=" + maxComments).then(response => response.json()).then((comments) => {
     debugLog(comments);
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
     comments.forEach((comment) => {
-      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.time));
+      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
     });
   });
 }
