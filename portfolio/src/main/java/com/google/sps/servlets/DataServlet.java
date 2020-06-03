@@ -50,7 +50,6 @@ public class DataServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int maxComments = Integer.parseInt(request.getParameter("max_comments"));
-    // System.out.println("maxComments=" + maxComments);
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){

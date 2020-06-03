@@ -14,8 +14,8 @@
 
 function loadComments(){
   const maxComments = document.getElementById("max-comments-select").value;
-  console.log(maxComments);
-  fetch('/data' + "?max_comments=" + maxComments).then(response => response.json()).then((comments) => {
+  debugLog(maxComments);
+  fetch("/data" + "?max_comments=" + maxComments).then(response => response.json()).then((comments) => {
     debugLog(comments);
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
