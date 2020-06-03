@@ -36,20 +36,24 @@ import com.google.appengine.api.datastore.FetchOptions;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   private static class Comment {
-    private final String email, comment, time;
-    public Comment(String email, String comment, String time){
+    private final String email, comment, date;
+    public Comment(String email, String comment, String date){
       this.email = email;
       this.comment = comment;
-      this.time = time;
+      this.date = date;
     }
   }
-  private Query comments_query = new Query("Comment").addSort("time", SortDirection.DESCENDING);
-  private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+  private DatastoreService datastore;
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
   
   @Override
+  public void init() {
+    datastore = DatastoreServiceFactory.getDatastoreService();
+  }
+  @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int maxComments = Integer.parseInt(request.getParameter("max_comments"));
+    Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
@@ -61,7 +65,7 @@ public class DataServlet extends HttpServlet {
   
   private static Comment makeComment(Entity comment){
     SimpleDateFormat sdf = new SimpleDateFormat();    
-    Date resultDate = new Date((Long)comment.getProperty("time"));
+    Date resultDate = new Date((Long)comment.getProperty("time_millis"));
     return new Comment( (String)comment.getProperty("email"), 
                         (String)comment.getProperty("comment"),
                         sdf.format(resultDate));
@@ -77,7 +81,7 @@ public class DataServlet extends HttpServlet {
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("email", request.getParameter("user_email"));
     commentEntity.setProperty("comment", request.getParameter("user_comment"));
-    commentEntity.setProperty("time", System.currentTimeMillis());    
+    commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
   }

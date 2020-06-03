@@ -20,7 +20,7 @@ function loadComments(){
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
     comments.forEach((comment) => {
-      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.time));
+      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
     });
   });
 }
