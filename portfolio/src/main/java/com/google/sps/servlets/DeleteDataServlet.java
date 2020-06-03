@@ -36,14 +36,6 @@ import com.google.appengine.api.datastore.FetchOptions;
 /** Servlet that handles comments data */
 @WebServlet("/delete-data")
 public class DeleteDataServlet extends HttpServlet {
-  private static class Comment {
-    private final String email, comment, time;
-    public Comment(String email, String comment, String time){
-      this.email = email;
-      this.comment = comment;
-      this.time = time;
-    }
-  }
  
   private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
   
@@ -53,30 +45,12 @@ public class DeleteDataServlet extends HttpServlet {
   }
   
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    
-  }
-  
-  private static Comment makeComment(Entity comment){
-    SimpleDateFormat sdf = new SimpleDateFormat();    
-    Date resultDate = new Date((Long)comment.getProperty("time"));
-    return new Comment( (String)comment.getProperty("email"), 
-                        (String)comment.getProperty("comment"),
-                        sdf.format(resultDate));
-  }
-  
-  private static String convertToJsonUsingGson(List<Comment> comments) {
-    Gson gson = new Gson();
-    return gson.toJson(comments);
-  }
-  
-  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Query commentKeysQuery = new Query("Comment").setKeysOnly();
     PreparedQuery commentKeysResults =  datastore.prepare(commentKeysQuery);
-    // System.out.println("doGet of delete data servlet called ");
     for(Entity commentKey : commentKeysResults.asIterable()){
       datastore.delete(commentKey.getKey());
     }
+    response.sendRedirect("/comments.html");
   }
 }
