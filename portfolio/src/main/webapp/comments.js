@@ -25,34 +25,38 @@ function loadComments(){
   });
 }
 
+function deleteComments(){
+  const request = new Request('/delete-data', {method: 'POST'});
+  fetch(request).then(response => {
+    if (response.redirected) {
+        window.location.href = response.url;
+    }
+  });
+}
+
 /** Creates an <li> element containing text. */
 function createCommentElement(email, comment, time) {
   const card = document.createElement("div"); 
   addClass(card, "card");
-  debugLog("created card")
   
   const cardBody = document.createElement("div"); 
   addClass(cardBody, "card-body");
   card.appendChild(cardBody)
-  debugLog("created card body")
   
   const title = document.createElement("h6"); 
   title.innerHTML = "From: " + email;
   addClass(title, "card-title")
   cardBody.appendChild(title);
-  debugLog("created card title")
     
   const text = document.createElement("p"); 
   text.innerHTML = comment;
   addClass(text, "card-text")
   cardBody.appendChild(text);
-  debugLog("created card text")
   
   const timeText = document.createElement("small"); 
   timeText.innerHTML = time;
   addClass(timeText, "card-text")
   cardBody.appendChild(timeText);
-  debugLog("created card time")
   
   return card;
 }
@@ -64,7 +68,7 @@ function addClass(element, attribute){
 }
 
 function debugLog(message) {
-  shouldLog = false;
+  shouldLog = true;
   if (!shouldLog) {
     return;
   }
