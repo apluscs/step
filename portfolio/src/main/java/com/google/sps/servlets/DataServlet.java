@@ -31,6 +31,8 @@ import java.util.ArrayList;
 import java.util.List;
 import com.google.gson.Gson;
 import com.google.appengine.api.datastore.FetchOptions;
+import org.owasp.html.Sanitizers;
+import org.owasp.html.PolicyFactory;
 
 /** Servlet that handles comments data */
 @WebServlet("/data")
@@ -45,10 +47,12 @@ public class DataServlet extends HttpServlet {
   }
   private DatastoreService datastore;
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  private static PolicyFactory sanitizer;
   
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
+    sanitizer = Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -80,7 +84,7 @@ public class DataServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity commentEntity = new Entity("Comment");
     commentEntity.setProperty("email", request.getParameter("user_email"));
-    commentEntity.setProperty("comment", request.getParameter("user_comment"));
+    commentEntity.setProperty("comment", sanitizer.sanitize(request.getParameter("user_comment")));
     commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
