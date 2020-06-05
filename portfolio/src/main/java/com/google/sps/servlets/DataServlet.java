@@ -52,9 +52,10 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int maxComments = Integer.parseInt(request.getParameter("max_comments"));
+    int maxComments = Integer.parseInt(request.getParameter("max_comments")), pgNumber = Integer.parseInt(request.getParameter("pg_number"));
+    System.out.println("pgNumber=" + pgNumber);
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments));
+    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments).offset(maxComments * pgNumber));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));

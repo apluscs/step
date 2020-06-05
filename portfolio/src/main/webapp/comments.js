@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function loadComments(){
+function loadComments(pg_number = 0){
   const maxComments = parseInt(document.getElementById("max-comments-select").value);
-  debugLog(maxComments);
-  fetch("/data" + "?max_comments=" + maxComments).then(response => response.json()).then((comments) => {
+  debugLog("maxComments=" + maxComments);
+  fetch("/data" + "?max_comments=" + maxComments+ "&pg_number=" + pg_number).then(response => response.json()).then((comments) => {
     debugLog(comments);
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
