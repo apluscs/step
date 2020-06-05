@@ -43,9 +43,9 @@ public class DataServlet extends HttpServlet {
       this.date = date;
     }
   }
-  private static class Response{
-    List<Comment> comments;
-    int lastPage;
+  private static class Response {
+    private List<Comment> comments;
+    private int lastPage;
     public Response(List<Comment> comments, int lastPage){
       this.comments = comments;
       this.lastPage = lastPage;
@@ -60,9 +60,14 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page")), pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
-    Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(commentsPerPage).offset(commentsPerPage * pgNumber));
+    int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page"));
+    int pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
+    Query commentsQuery = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
+    List<Entity> results = datastore
+      .prepare(commentsQuery)
+      .asList(FetchOptions.Builder
+      .withLimit(commentsPerPage)
+      .offset(commentsPerPage * pgNumber));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
@@ -73,8 +78,8 @@ public class DataServlet extends HttpServlet {
   
   // not very efficient, can improve with another entity to track total number of comments
   private int getLastPage(double commentsPerPage){
-    Query comments_query = new Query("Comment");
-    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withDefaults());
+    Query commentsQuery = new Query("Comment");
+    List<Entity> results =  datastore.prepare(commentsQuery).asList(FetchOptions.Builder.withDefaults());
     return (int) Math.ceil(results.size() / commentsPerPage);
   }
   

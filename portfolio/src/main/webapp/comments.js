@@ -12,50 +12,53 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function loadPage(pgNumber = 1){
+function loadCommentsPage(pgNumber = 1){
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
-  
+  const DOM_WAIT_TIME = 750;
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
-    loadComments(response.comments);
-    loadPagination(response.lastPage, pgNumber);
+    renderComments(response.comments);
+    renderPagination(response.lastPage, pgNumber);
   });
+  
+  // need to wait so that the pagination renders and document.getElementById("pg" + pgNumber) doesn't return null
   setTimeout(function(){
     addClass(document.getElementById("pg" + pgNumber), "active");
-  }, 750);
+  }, DOM_WAIT_TIME);
   
 }
 
-function loadPagination(lastPage, currPage){
+function renderPagination(lastPage, currPage){
   const paginationList = document.getElementById('pagination-list');
   while (paginationList.firstChild) {
     paginationList.removeChild(paginationList.lastChild);
   }
   if(lastPage <= 6){
     // all icons can fit on the screen
-    loadPages(paginationList, 1, lastPage);
-  } else {
-    // Outline: [1] [..] [currPage - 1] [currPage] [currPage + 1] [..] [lastPage]
-    // If currPage exactly 2 away from either end, include all from currPage to that end (ex. [1][2][3])
-    if(currPage >= 3){
-      loadPages(paginationList, 1, 1);
-      if(currPage > 3){
-        paginationList.appendChild(createPageElement(".."));
-      }
+    renderPaginationRange(paginationList, 1, lastPage);
+    return;
+  } 
+  
+  // Outline: [1] [..] [currPage - 1] [currPage] [currPage + 1] [..] [lastPage]
+  // If currPage exactly 2 away from either end, include all from currPage to that end (ex. [1][2][3])
+  if(currPage >= 3){
+    renderPaginationRange(paginationList, 1, 1);
+    if(currPage > 3){
+      paginationList.appendChild(createPageElement(".."));
     }
-    loadPages(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1));
-    
-    if(currPage <= lastPage - 2){
-      if(currPage < lastPage - 2){
-        paginationList.appendChild(createPageElement(".."));
-      }
-      loadPages(paginationList, lastPage, lastPage);
+  }
+  renderPaginationRange(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1));
+  
+  if(currPage <= lastPage - 2){
+    if(currPage < lastPage - 2){
+      paginationList.appendChild(createPageElement(".."));
     }
+    renderPaginationRange(paginationList, lastPage, lastPage);
   }
   
 }
 
-function loadPages(paginationList, start, end){
+function renderPaginationRange(paginationList, start, end){
   for(i = start; i <= end; ++i){
     paginationList.appendChild(createPageElement(i));
   }
@@ -73,7 +76,7 @@ function createPageElement(page){
   addClass(button, "page-link");
   button.addEventListener("click", function(){
     debugLog("button clicked for page " + page)
-    loadPage(page)
+    loadCommentsPage(page)
   });
   
   listElement.appendChild(button);
@@ -81,7 +84,7 @@ function createPageElement(page){
   return listElement;
 }
 
-function loadComments(comments){
+function renderComments(comments){
   debugLog(comments);
   const commentsList = document.getElementById('comments-container');
   commentsList.innerHTML = '';
