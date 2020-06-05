@@ -45,8 +45,8 @@ public class DataServlet extends HttpServlet {
       this.date = date;
     }
   }
-  private DatastoreService datastore;
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  private DatastoreService datastore;
   private static PolicyFactory sanitizer;
   
   @Override
