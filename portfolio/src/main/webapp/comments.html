@@ -14,7 +14,7 @@
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="comments.js"></script>
   </head>
-  <body onload=loadComments()>
+  <body onload=loadCommentsPage()>
     <div id="content">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="collapse navbar-collapse" id="navbarText">
@@ -28,7 +28,7 @@
           </ul>
         </div>
       </nav>
-      <br><br><br><br>
+      <br><br>
       <form action="/data" method="POST">
         <h3 class="header"> Leave a Comment! </h3>
         <div class="form-group">
@@ -48,17 +48,23 @@
         <h3 class="header"> Comments </h3>
         <div class="input-group mb-3">
           <div class="input-group-prepend">
-            <label class="input-group-text" for="max-comments-select">Set max number of comments: </label>
+            <label class="input-group-text" for="comments-per-page-select">Set number of comments per page: </label>
           </div>
-          <select class="custom-select" id="max-comments-select" onchange="loadComments()">
+          <select class="custom-select" id="comments-per-page-select" onchange="loadCommentsPage()">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
           </select>
         </div>
-        <button type="button" class="btn btn-danger" onclick="deleteComments()">Delete all comments</button>
         <ul id="comments-container"></ul>
+        <nav class="text-center">
+          <ul class="pagination justify-content-center" id="pagination-list"></ul>
+        </nav>
+        <div class="text-center">
+          <button type="button" class="btn btn-danger" onclick="deleteComments()">Delete all comments</button>
+        </div>
       </section>
+      <br><br>
     </div>
   </body>
 </html>

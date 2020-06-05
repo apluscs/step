@@ -45,6 +45,14 @@ public class DataServlet extends HttpServlet {
       this.date = date;
     }
   }
+  private static class Response {
+    private List<Comment> comments;
+    private int lastPage;
+    public Response(List<Comment> comments, int lastPage) {
+      this.comments = comments;
+      this.lastPage = lastPage;
+    }
+  }
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
   private DatastoreService datastore;
   private PolicyFactory sanitizer;
@@ -56,15 +64,27 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int maxComments = Integer.parseInt(request.getParameter("max_comments"));
-    Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments));
+    int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page"));
+    int pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
+    Query commentsQuery = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
+    List<Entity> results = 
+      datastore.prepare(commentsQuery).asList(
+        FetchOptions.Builder
+          .withLimit(commentsPerPage)
+          .offset(commentsPerPage * pgNumber));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
     }
     response.setContentType("application/json;");
-    response.getWriter().println(convertToJsonUsingGson(comments));
+    response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
+  }
+  
+  // Not very efficient, can improve with another entity to track total number of comments.
+  private int getLastPage(double commentsPerPage){
+    Query commentsQuery = new Query("Comment");
+    int entitiesCount =  datastore.prepare(commentsQuery).countEntities(FetchOptions.Builder.withDefaults());
+    return (int) Math.ceil(entitiesCount / commentsPerPage);
   }
   
   private static Comment makeComment(Entity comment){
@@ -75,9 +95,9 @@ public class DataServlet extends HttpServlet {
                         sdf.format(resultDate));
   }
   
-  private static String convertToJsonUsingGson(List<Comment> comments) {
+  private static String convertToJsonUsingGson(Response response) {
     Gson gson = new Gson();
-    return gson.toJson(comments);
+    return gson.toJson(response);
   }
   
   @Override
