@@ -46,13 +46,13 @@ public class DataServlet extends HttpServlet {
   private static class Response {
     private List<Comment> comments;
     private int lastPage;
-    public Response(List<Comment> comments, int lastPage){
+    public Response(List<Comment> comments, int lastPage) {
       this.comments = comments;
       this.lastPage = lastPage;
     }
   }
-  private DatastoreService datastore;
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  private DatastoreService datastore;
   
   @Override
   public void init() {
@@ -63,11 +63,11 @@ public class DataServlet extends HttpServlet {
     int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page"));
     int pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
     Query commentsQuery = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results = datastore
-      .prepare(commentsQuery)
-      .asList(FetchOptions.Builder
-      .withLimit(commentsPerPage)
-      .offset(commentsPerPage * pgNumber));
+    List<Entity> results = 
+      datastore.prepare(commentsQuery).asList(
+        FetchOptions.Builder
+          .withLimit(commentsPerPage)
+          .offset(commentsPerPage * pgNumber));
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
@@ -76,11 +76,11 @@ public class DataServlet extends HttpServlet {
     response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
   }
   
-  // not very efficient, can improve with another entity to track total number of comments
+  // Not very efficient, can improve with another entity to track total number of comments.
   private int getLastPage(double commentsPerPage){
     Query commentsQuery = new Query("Comment");
-    List<Entity> results =  datastore.prepare(commentsQuery).asList(FetchOptions.Builder.withDefaults());
-    return (int) Math.ceil(results.size() / commentsPerPage);
+    int entitiesCount =  datastore.prepare(commentsQuery).countEntities(FetchOptions.Builder.withDefaults());
+    return (int) Math.ceil(entitiesCount / commentsPerPage);
   }
   
   private static Comment makeComment(Entity comment){

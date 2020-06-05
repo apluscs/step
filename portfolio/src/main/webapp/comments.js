@@ -14,18 +14,11 @@
 
 function loadCommentsPage(pgNumber = 1){
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
-  const DOM_WAIT_TIME = 750;
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
     renderComments(response.comments);
     renderPagination(response.lastPage, pgNumber);
   });
-  
-  // need to wait so that the pagination renders and document.getElementById("pg" + pgNumber) doesn't return null
-  setTimeout(function(){
-    addClass(document.getElementById("pg" + pgNumber), "active");
-  }, DOM_WAIT_TIME);
-  
 }
 
 function renderPagination(lastPage, currPage){
@@ -34,20 +27,20 @@ function renderPagination(lastPage, currPage){
     paginationList.removeChild(paginationList.lastChild);
   }
   if(lastPage <= 6){
-    // all icons can fit on the screen
+    // All icons can fit on the screen.
     renderPaginationRange(paginationList, 1, lastPage);
     return;
   } 
   
   // Outline: [1] [..] [currPage - 1] [currPage] [currPage + 1] [..] [lastPage]
-  // If currPage exactly 2 away from either end, include all from currPage to that end (ex. [1][2][3])
+  // If currPage exactly 2 away from either end, include all from currPage to that end (ex. [1][2][3]).
   if(currPage >= 3){
     renderPaginationRange(paginationList, 1, 1);
     if(currPage > 3){
       paginationList.appendChild(createPageElement(".."));
     }
   }
-  renderPaginationRange(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1));
+  renderPaginationRange(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1), currPage);
   
   if(currPage <= lastPage - 2){
     if(currPage < lastPage - 2){
@@ -55,19 +48,21 @@ function renderPagination(lastPage, currPage){
     }
     renderPaginationRange(paginationList, lastPage, lastPage);
   }
-  
 }
 
-function renderPaginationRange(paginationList, start, end){
+// If currPage is not set, page will never match with currPage.
+function renderPaginationRange(paginationList, start, end, currPage = -1){
   for(i = start; i <= end; ++i){
-    paginationList.appendChild(createPageElement(i));
+    paginationList.appendChild(createPageElement(i, currPage));
   }
 }
 
-function createPageElement(page){    
+function createPageElement(page, currPage = -1){    
   const listElement = document.createElement("li"); 
   addClass(listElement, "page-item")
-  listElement.setAttribute("id", "pg" + page);
+  if(page === currPage){
+    addClass(listElement, "active");
+  }
   
   const button = document.createElement("button"); 
   button.innerHTML = page;
@@ -80,7 +75,6 @@ function createPageElement(page){
   });
   
   listElement.appendChild(button);
-    
   return listElement;
 }
 
