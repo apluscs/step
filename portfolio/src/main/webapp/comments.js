@@ -12,23 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function loadPage(pgNumber = 0){
+function loadPage(pgNumber = 1){
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
+  
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
     loadComments(response.comments);
-    loadPagination(response.lastPage);
+    loadPagination(response.lastPage, pgNumber);
   });
+
 }
 
-function loadPagination(lastPage){
-  debugLog("lastPage=" + lastPage)
+function loadPagination(lastPage, currPage){
   const paginationList = document.getElementById('pagination-list');
   while (paginationList.firstChild) {
     paginationList.removeChild(paginationList.lastChild);
   }
   for(i = 1; i <= lastPage; ++i){
     paginationList.appendChild(createPageElement(i));
+    if(i === currPage){
+      console.log("page active is " + currPage)
+      addClass(paginationList.lastChild, "active");
+    }
   }
 }
 
@@ -43,7 +48,7 @@ function createPageElement(page){
   addClass(button, "page-link");
   button.addEventListener("click", function(){
     debugLog("button clicked for page " + page)
-    loadPage(page - 1)
+    loadPage(page)
   });
   listElement.appendChild(button);
     

@@ -28,7 +28,7 @@
           </ul>
         </div>
       </nav>
-      <br><br><br><br>
+      <br><br>
       <form action="/data" method="POST">
         <h3 class="header"> Leave a Comment! </h3>
         <div class="form-group">
@@ -56,14 +56,16 @@
             <option value="20">20</option>
           </select>
         </div>
-        <button type="button" class="btn btn-danger" onclick="deleteComments()">Delete all comments</button>
-        <nav aria-label="Page navigation example">
-          <ul class="pagination" id="pagination-list">
-            
-          </ul>
-        </nav>
         <ul id="comments-container"></ul>
+        
+        <nav class="text-center">
+          <ul class="pagination" id="pagination-list"></ul>
+        </nav>
+        <div class="text-center">
+          <button type="button" class="btn btn-danger" onclick="deleteComments()">Delete all comments</button>
+        </div>
       </section>
+      <br><br>
     </div>
   </body>
 </html>
