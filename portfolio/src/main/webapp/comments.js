@@ -20,7 +20,10 @@ function loadPage(pgNumber = 1){
     loadComments(response.comments);
     loadPagination(response.lastPage, pgNumber);
   });
-
+  setTimeout(function(){
+    addClass(document.getElementById("pg" + pgNumber), "active");
+  }, 750);
+  
 }
 
 function loadPagination(lastPage, currPage){
@@ -28,18 +31,40 @@ function loadPagination(lastPage, currPage){
   while (paginationList.firstChild) {
     paginationList.removeChild(paginationList.lastChild);
   }
-  for(i = 1; i <= lastPage; ++i){
-    paginationList.appendChild(createPageElement(i));
-    if(i === currPage){
-      console.log("page active is " + currPage)
-      addClass(paginationList.lastChild, "active");
+  if(lastPage <= 6){
+    // all icons can fit on the screen
+    loadPages(paginationList, 1, lastPage);
+  } else {
+    // Outline: [1] [..] [currPage - 1] [currPage] [currPage + 1] [..] [lastPage]
+    // If currPage exactly 2 away from either end, include all from currPage to that end (ex. [1][2][3])
+    if(currPage >= 3){
+      loadPages(paginationList, 1, 1);
+      if(currPage > 3){
+        paginationList.appendChild(createPageElement(".."));
+      }
     }
+    loadPages(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1));
+    
+    if(currPage <= lastPage - 2){
+      if(currPage < lastPage - 2){
+        paginationList.appendChild(createPageElement(".."));
+      }
+      loadPages(paginationList, lastPage, lastPage);
+    }
+  }
+  
+}
+
+function loadPages(paginationList, start, end){
+  for(i = start; i <= end; ++i){
+    paginationList.appendChild(createPageElement(i));
   }
 }
 
 function createPageElement(page){    
   const listElement = document.createElement("li"); 
   addClass(listElement, "page-item")
+  listElement.setAttribute("id", "pg" + page);
   
   const button = document.createElement("button"); 
   button.innerHTML = page;
@@ -50,6 +75,7 @@ function createPageElement(page){
     debugLog("button clicked for page " + page)
     loadPage(page)
   });
+  
   listElement.appendChild(button);
     
   return listElement;
@@ -104,7 +130,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }

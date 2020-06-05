@@ -49,7 +49,6 @@ public class DataServlet extends HttpServlet {
     public Response(List<Comment> comments, int lastPage){
       this.comments = comments;
       this.lastPage = lastPage;
-      System.out.println("lastPage=" + lastPage);
     }
   }
   private DatastoreService datastore;
@@ -62,10 +61,8 @@ public class DataServlet extends HttpServlet {
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page")), pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
-    // System.out.println("pgNumber=" + pgNumber);
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(commentsPerPage).offset(commentsPerPage * pgNumber));
-    // System.out.println("#results=" + results.size());
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
