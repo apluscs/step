@@ -74,7 +74,7 @@ public class DataServlet extends HttpServlet {
     response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
   }
   
-  // not very efficient, can improve with cursors
+  // not very efficient, can improve with another entity to track total number of comments
   private int getLastPage(double commentsPerPage){
     Query comments_query = new Query("Comment");
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withDefaults());
