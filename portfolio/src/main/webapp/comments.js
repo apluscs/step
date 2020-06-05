@@ -13,7 +13,7 @@
 // limitations under the License.
 
 function loadPage(pgNumber = 0){
-  const commentsPerPage = parseInt(document.getElementById("comments-per-page-select").value);
+  const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
     loadComments(response.comments);
@@ -23,6 +23,25 @@ function loadPage(pgNumber = 0){
 
 function loadPagination(lastPage){
   debugLog("lastPage=" + lastPage)
+  const paginationList = document.getElementById('pagination-list');
+  for(i = 1; i <= lastPage; ++i){
+    paginationList.appendChild(createPageElement(i));
+  }
+}
+
+function createPageElement(page){    
+  const listElement = document.createElement("li"); 
+  addClass(listElement, "page-item")
+  
+  const button = document.createElement("button"); 
+  button.innerHTML = page;
+  addClass(button, "btn");
+  addClass(button, "btn-default");
+  addClass(button, "page-link");
+  listElement.appendChild(button);
+  debugLog("made page" + page);
+  
+  return listElement;
 }
 
 function loadComments(comments){
@@ -43,7 +62,6 @@ function deleteComments(){
   });
 }
 
-/** Creates an <li> element containing text. */
 function createCommentElement(email, comment, time) {
   const card = document.createElement("div"); 
   addClass(card, "card");
@@ -70,10 +88,8 @@ function createCommentElement(email, comment, time) {
   return card;
 }
 
-function addClass(element, attribute){
-  const att = document.createAttribute("class");  
-  att.value = attribute;                           
-  element.setAttributeNode(att);  
+function addClass(element, className){                         
+  element.classList.add(className);  
 }
 
 function debugLog(message) {
