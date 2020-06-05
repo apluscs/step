@@ -56,6 +56,7 @@ public class DataServlet extends HttpServlet {
     System.out.println("pgNumber=" + pgNumber);
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments).offset(maxComments * pgNumber));
+    System.out.println("#results=" + results.size());
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
