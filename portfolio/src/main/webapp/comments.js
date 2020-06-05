@@ -12,16 +12,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function loadComments(pg_number = 0){
+function loadPage(pgNumber = 0){
   const commentsPerPage = parseInt(document.getElementById("comments-per-page-select").value);
   debugLog("commentsPerPage=" + commentsPerPage);
-  fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pg_number).then(response => response.json()).then((comments) => {
-    debugLog(comments);
-    const commentsList = document.getElementById('comments-container');
-    commentsList.innerHTML = '';
-    comments.forEach((comment) => {
-      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
-    });
+  fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
+    loadComments(response.comments);
+    loadPagination(response.lastPage);
+  });
+}
+
+function loadPagination(lastPage){
+  debugLog("lastPage=" + lastPage)
+}
+
+function loadComments(comments){
+  debugLog(comments);
+  const commentsList = document.getElementById('comments-container');
+  commentsList.innerHTML = '';
+  comments.forEach((comment) => {
+    commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
   });
 }
 

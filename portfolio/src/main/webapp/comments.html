@@ -14,7 +14,7 @@
       integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
     <script src="comments.js"></script>
   </head>
-  <body onload=loadComments()>
+  <body onload=loadPage()>
     <div id="content">
       <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="collapse navbar-collapse" id="navbarText">
@@ -50,7 +50,7 @@
           <div class="input-group-prepend">
             <label class="input-group-text" for="comments-per-page-select">Set number of comments per page: </label>
           </div>
-          <select class="custom-select" id="comments-per-page-select" onchange="loadComments()">
+          <select class="custom-select" id="comments-per-page-select" onchange="loadPage()">
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
