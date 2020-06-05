@@ -38,9 +38,11 @@ function createPageElement(page){
   addClass(button, "btn");
   addClass(button, "btn-default");
   addClass(button, "page-link");
+  button.addEventListener("click", function(){
+    debugLog("button  clicked!")
+  });
   listElement.appendChild(button);
-  debugLog("made page" + page);
-  
+    
   return listElement;
 }
 
