@@ -28,7 +28,7 @@ function renderPagination(lastPage, currPage){
   }
   if(lastPage <= 6){
     // All icons can fit on the screen.
-    renderPaginationRange(paginationList, 1, lastPage);
+    renderPaginationRange(paginationList, 1, lastPage, currPage);
     return;
   } 
   
