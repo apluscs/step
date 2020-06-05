@@ -13,9 +13,9 @@
 // limitations under the License.
 
 function loadComments(pg_number = 0){
-  const maxComments = parseInt(document.getElementById("max-comments-select").value);
-  debugLog("maxComments=" + maxComments);
-  fetch("/data" + "?max_comments=" + maxComments+ "&pg_number=" + pg_number).then(response => response.json()).then((comments) => {
+  const commentsPerPage = parseInt(document.getElementById("comments-per-page-select").value);
+  debugLog("commentsPerPage=" + commentsPerPage);
+  fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pg_number).then(response => response.json()).then((comments) => {
     debugLog(comments);
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';

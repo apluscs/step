@@ -61,7 +61,7 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int commentsPerPage = Integer.parseInt(request.getParameter("max_comments")), pgNumber = Integer.parseInt(request.getParameter("pg_number"));
+    int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page")), pgNumber = Integer.parseInt(request.getParameter("pg_number"));
     // System.out.println("pgNumber=" + pgNumber);
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
     List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(commentsPerPage).offset(commentsPerPage * pgNumber));
