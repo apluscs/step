@@ -43,6 +43,15 @@ public class DataServlet extends HttpServlet {
       this.date = date;
     }
   }
+  private static class Response{
+    List<Comment> comments;
+    int lastPage;
+    public Response(List<Comment> comments, int lastPage){
+      this.comments = comments;
+      this.lastPage = lastPage;
+      System.out.println("lastPage=" + lastPage);
+    }
+  }
   private DatastoreService datastore;
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
   
@@ -52,17 +61,24 @@ public class DataServlet extends HttpServlet {
   }
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    int maxComments = Integer.parseInt(request.getParameter("max_comments")), pgNumber = Integer.parseInt(request.getParameter("pg_number"));
-    System.out.println("pgNumber=" + pgNumber);
+    int commentsPerPage = Integer.parseInt(request.getParameter("max_comments")), pgNumber = Integer.parseInt(request.getParameter("pg_number"));
+    // System.out.println("pgNumber=" + pgNumber);
     Query comments_query = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(maxComments).offset(maxComments * pgNumber));
-    System.out.println("#results=" + results.size());
+    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withLimit(commentsPerPage).offset(commentsPerPage * pgNumber));
+    // System.out.println("#results=" + results.size());
     List<Comment> comments = new ArrayList<Comment>();
     for(Entity comment : results){
       comments.add(makeComment(comment));
     }
     response.setContentType("application/json;");
-    response.getWriter().println(convertToJsonUsingGson(comments));
+    response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
+  }
+  
+  // not very efficient, can improve with cursors
+  private int getLastPage(double commentsPerPage){
+    Query comments_query = new Query("Comment");
+    List<Entity> results =  datastore.prepare(comments_query).asList(FetchOptions.Builder.withDefaults());
+    return (int) Math.ceil(results.size() / commentsPerPage);
   }
   
   private static Comment makeComment(Entity comment){
@@ -73,9 +89,9 @@ public class DataServlet extends HttpServlet {
                         sdf.format(resultDate));
   }
   
-  private static String convertToJsonUsingGson(List<Comment> comments) {
+  private static String convertToJsonUsingGson(Response response) {
     Gson gson = new Gson();
-    return gson.toJson(comments);
+    return gson.toJson(response);
   }
   
   @Override
