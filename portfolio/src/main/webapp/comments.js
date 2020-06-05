@@ -24,6 +24,9 @@ function loadPage(pgNumber = 0){
 function loadPagination(lastPage){
   debugLog("lastPage=" + lastPage)
   const paginationList = document.getElementById('pagination-list');
+  while (paginationList.firstChild) {
+    paginationList.removeChild(paginationList.lastChild);
+  }
   for(i = 1; i <= lastPage; ++i){
     paginationList.appendChild(createPageElement(i));
   }
@@ -39,7 +42,8 @@ function createPageElement(page){
   addClass(button, "btn-default");
   addClass(button, "page-link");
   button.addEventListener("click", function(){
-    debugLog("button  clicked!")
+    debugLog("button clicked for page " + page)
+    loadPage(page - 1)
   });
   listElement.appendChild(button);
     
