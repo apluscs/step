@@ -12,12 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+google.charts.load("current", {packages:["corechart"]});
+google.charts.setOnLoadCallback(renderCommentsChart);
+
 function loadCommentsPage(pgNumber = 1){
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
     renderComments(response.comments);
     renderPagination(response.lastPage, pgNumber);
+  });
+}
+
+function renderCommentsChart(){
+  fetch('/visualize-comments').then(response => response.json())
+  .then((wordCount) => {
+    
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Word');
+    data.addColumn('number', 'Count');
+    Object.keys(wordCount).forEach((word) => {
+      data.addRow([word, wordCount[word]]);
+    });
+    debugLog("wordCount" + data);
+    const options = {
+      'title': 'Most Frequent Words in Comments',
+      'width': 600,
+      'height': 500
+    };
+
+    const chart = new google.visualization.Histogram(
+        document.getElementById('chart-container'));
+    chart.draw(data, options);
   });
 }
 
@@ -127,7 +153,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = false;
+  shouldLog = true;
   if (!shouldLog) {
     return;
   }
