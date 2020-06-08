@@ -14,9 +14,17 @@
 
 /** Creates a map and adds it to the page. */
 function createMap() {
-  console.log("map createing")
+  const USCenterX = 38.5, USCenterY = -98;
   const map = new google.maps.Map(
     document.getElementById('map'),
-    {center: {lat: 38.5, lng: -98}, zoom: 3}
+    {center: {lat: USCenterX, lng: USCenterY}, zoom: 3}
   );
+}
+
+function debugLog(message) {
+  shouldLog = false;
+  if (!shouldLog) {
+    return;
+  }
+  console.log(message)
 }
