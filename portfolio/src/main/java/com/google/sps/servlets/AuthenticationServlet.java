@@ -25,38 +25,38 @@ import com.google.gson.Gson;
 
 @WebServlet("/authenticate")
 public class AuthenticationServlet extends HttpServlet {
-	// For when user is logged in.
-	private static class LoggedInResponse {
-		private boolean isUserLoggedIn;
-		private String logoutUrl, userEmail;
-		public LoggedInResponse(String logoutUrl, String userEmail) {
-			isUserLoggedIn = true;
-			this.logoutUrl = logoutUrl;
-			this.userEmail = userEmail;
-		}
-	}
+  // For when user is logged in.
+  private static class LoggedInResponse {
+    private boolean isUserLoggedIn;
+    private String logoutUrl, userEmail;
+    public LoggedInResponse(String logoutUrl, String userEmail) {
+      isUserLoggedIn = true;
+      this.logoutUrl = logoutUrl;
+      this.userEmail = userEmail;
+    }
+  }
 
-	// For when user is logged out.
-	private static class LoggedOutResponse {
-		private boolean isUserLoggedIn;
-		private String loginUrl;
-		public LoggedOutResponse(String loginUrl) {
-			isUserLoggedIn = false;
-			this.loginUrl = loginUrl;
-		}
-	}
+  // For when user is logged out.
+  private static class LoggedOutResponse {
+    private boolean isUserLoggedIn;
+    private String loginUrl;
+    public LoggedOutResponse(String loginUrl) {
+      isUserLoggedIn = false;
+      this.loginUrl = loginUrl;
+    }
+  }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setContentType("application/json");
 
     UserService userService = UserServiceFactory.getUserService();
-		Gson gson = new Gson();
+    Gson gson = new Gson();
     if (userService.isUserLoggedIn()) {
       String userEmail = userService.getCurrentUser().getEmail();
       String urlToRedirectToAfterUserLogsOut = "/";
       String logoutUrl = userService.createLogoutURL(urlToRedirectToAfterUserLogsOut);
-			response.getWriter().println(gson.toJson(new LoggedInResponse(logoutUrl, userEmail)));
+      response.getWriter().println(gson.toJson(new LoggedInResponse(logoutUrl, userEmail)));
     } else {
       String urlToRedirectToAfterUserLogsIn = "/";
       String loginUrl = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
