@@ -17,6 +17,6 @@ function createMap() {
 	console.log("map createing")
 	const map = new google.maps.Map(
 		document.getElementById('map'),
-		{center: {lat: 37.422, lng: -122.084}, zoom: 16});
+		{center: {lat: 38.5, lng: -98}, zoom: 3}
+	);
 }
-  
