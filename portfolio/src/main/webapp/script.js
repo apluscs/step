@@ -18,15 +18,25 @@ function loadPage() {
 }
 
 function renderAuthentication(){
-  
+  fetch('/authenticate').then((response) => response.json()).then((response) => {
+    debugLog(response);
+  });
 }
 
 function renderRandomGreeting(){
   fetch('/random-greeting').then((response) => {
-    console.log("got the response")
+    debugLog("got the response")
     return response.text();
   }).then((greeting) => {
-    console.log('Adding greeting to dom: ' + greeting);
+    debugLog('Adding greeting to dom: ' + greeting);
     document.getElementById('greeting-container').innerText = greeting;
   });
+}
+
+function debugLog(message) {
+  shouldLog = true;
+  if (!shouldLog) {
+    return;
+  }
+  console.log(message)
 }

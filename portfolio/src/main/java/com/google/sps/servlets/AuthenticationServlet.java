@@ -28,9 +28,11 @@ public class AuthenticationServlet extends HttpServlet {
 	// For when user is logged in.
 	private static class LoggedInResponse {
 		private boolean isUserLoggedIn;
-		private String logoutUrl;
-		public LoggedInResponse() {
+		private String logoutUrl, userEmail;
+		public LoggedInResponse(String logoutUrl, String userEmail) {
 			isUserLoggedIn = true;
+			this.logoutUrl = logoutUrl;
+			this.userEmail = userEmail;
 		}
 	}
 
@@ -54,11 +56,10 @@ public class AuthenticationServlet extends HttpServlet {
       String userEmail = userService.getCurrentUser().getEmail();
       String urlToRedirectToAfterUserLogsOut = "/";
       String logoutUrl = userService.createLogoutURL(urlToRedirectToAfterUserLogsOut);
-			response.getWriter().println(gson.toJson(new LoggedInResponse()));
+			response.getWriter().println(gson.toJson(new LoggedInResponse(logoutUrl, userEmail)));
     } else {
       String urlToRedirectToAfterUserLogsIn = "/";
       String loginUrl = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
-
       response.getWriter().println(gson.toJson(new LoggedOutResponse(loginUrl)));
       
     }
