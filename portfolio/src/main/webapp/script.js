@@ -12,7 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-window.onload = () => { 
+function loadPage() {
+  renderRandomGreeting();
+  renderAuthentication();
+}
+
+function renderAuthentication(){
+  
+}
+
+function renderRandomGreeting(){
   fetch('/random-greeting').then((response) => {
     console.log("got the response")
     return response.text();
