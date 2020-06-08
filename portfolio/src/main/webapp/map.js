@@ -14,9 +14,9 @@
 
 /** Creates a map and adds it to the page. */
 function createMap() {
-	console.log("map createing")
-	const map = new google.maps.Map(
-		document.getElementById('map'),
-		{center: {lat: 38.5, lng: -98}, zoom: 3}
-	);
+  console.log("map createing")
+  const map = new google.maps.Map(
+    document.getElementById('map'),
+    {center: {lat: 38.5, lng: -98}, zoom: 3}
+  );
 }
