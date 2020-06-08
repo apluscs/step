@@ -39,11 +39,6 @@ function createAuthenticatedStatusElement(href, text) {
   link.setAttribute("href", href);
   link.innerHTML = text;
 
-  const span = document.createElement("span");
-  span.classList.add("sr-only");
-  span.innerHTML = "(current)";
-  link.appendChild(span); 
-
   listElement.appendChild(link);
   return listElement;
 }
@@ -59,7 +54,7 @@ function renderRandomGreeting(){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }

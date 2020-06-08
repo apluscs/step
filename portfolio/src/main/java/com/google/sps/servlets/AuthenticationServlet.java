@@ -61,7 +61,6 @@ public class AuthenticationServlet extends HttpServlet {
       String urlToRedirectToAfterUserLogsIn = "/";
       String loginUrl = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
       response.getWriter().println(gson.toJson(new LoggedOutResponse(loginUrl)));
-      
     }
   }
 }
