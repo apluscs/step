@@ -46,6 +46,8 @@ public class AuthenticationServlet extends HttpServlet {
     }
   }
 
+  private static final String ROOT_URL = "/";
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     response.setContentType("application/json");
@@ -53,14 +55,12 @@ public class AuthenticationServlet extends HttpServlet {
     UserService userService = UserServiceFactory.getUserService();
     Gson gson = new Gson();
     if (userService.isUserLoggedIn()) {
-      String userEmail = userService.getCurrentUser().getEmail();
-      String urlToRedirectToAfterUserLogsOut = "/";
-      String logoutUrl = userService.createLogoutURL(urlToRedirectToAfterUserLogsOut);
-      response.getWriter().println(gson.toJson(new LoggedInResponse(logoutUrl, userEmail)));
+      response.getWriter().println(gson.toJson(
+        new LoggedInResponse(userService.createLogoutURL(ROOT_URL),
+        userService.getCurrentUser().getEmail())));
     } else {
-      String urlToRedirectToAfterUserLogsIn = "/";
-      String loginUrl = userService.createLoginURL(urlToRedirectToAfterUserLogsIn);
-      response.getWriter().println(gson.toJson(new LoggedOutResponse(loginUrl)));
+      response.getWriter().println(gson.toJson(
+        new LoggedOutResponse(userService.createLoginURL(ROOT_URL))));
     }
   }
 }
