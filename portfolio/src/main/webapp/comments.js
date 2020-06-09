@@ -79,15 +79,21 @@ function createPageElement(page, currPage = -1){
 }
 
 function renderComments(comments){
+  userEmail = "";
+  fetch('/authenticate').then((response) => response.json()).then((response) => {
+    if (response.isUserLoggedIn){
+      userEmail = response.userEmail;
+    } 
+  });
   debugLog(comments);
   const commentsList = document.getElementById('comments-container');
   commentsList.innerHTML = '';
   comments.forEach((comment) => {
-    commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date));
+    commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date, userEmail));
   });
 }
 
-function deleteComments(){
+function deleteComment(){
   const request = new Request('/delete-data', {method: 'POST'});
   fetch(request).then(response => {
     if (response.redirected) {
@@ -96,28 +102,20 @@ function deleteComments(){
   });
 }
 
-function createCommentElement(email, comment, time) {
-  const card = document.createElement("div"); 
-  addClass(card, "card");
+function createCommentElement(email, comment, time, userEmail) {
+  const template = document.getElementById("comment-template");
+  const card = template.cloneNode(true);
+  card.setAttribute("id", "");
+  debugLog(card.querySelector("#comment-title"));
+  card.querySelector("#comment-title").innerHTML = "From: " + email;
+  card.querySelector("#comment-text").innerHTML = comment;
+  card.querySelector("#comment-time").innerHTML = time;
   
-  const cardBody = document.createElement("div"); 
-  addClass(cardBody, "card-body");
-  card.appendChild(cardBody)
-  
-  const title = document.createElement("h6"); 
-  title.innerHTML = "From: " + email;
-  addClass(title, "card-title")
-  cardBody.appendChild(title);
-    
-  const text = document.createElement("p"); 
-  text.innerHTML = comment;
-  addClass(text, "card-text")
-  cardBody.appendChild(text);
-  
-  const timeText = document.createElement("small"); 
-  timeText.innerHTML = time;
-  addClass(timeText, "card-text")
-  cardBody.appendChild(timeText);
+  // Give the user the option to delete comments they made.
+  if (email === userEmail) {
+    card.querySelector("#comment-delete-link").removeAttribute("hidden");
+  }
+  document.getElementById("comments-container").appendChild(card);
   
   return card;
 }
@@ -127,7 +125,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = false;
+  shouldLog = true;
   if (!shouldLog) {
     return;
   }
