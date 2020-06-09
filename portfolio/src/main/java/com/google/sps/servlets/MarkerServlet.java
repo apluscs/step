@@ -70,9 +70,7 @@ public class MarkerServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity markerEntity = new Entity("Marker");
-    System.out.println(request.getQueryString());
     String lat = request.getParameter("lat"), lng = request.getParameter("lng");
-    System.out.println(lat +",, " + lng);
     markerEntity.setProperty("lat", lat);
     markerEntity.setProperty("lng", lng);
     datastore.put(markerEntity);
