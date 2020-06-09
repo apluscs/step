@@ -20,25 +20,27 @@ function loadPage() {
 }
 
 function renderAddressForm() {
+  // On submit, address-form will convert city, state to lat, lng and POST that to datastore
   document.getElementById('address-form').addEventListener('submit', (e) => {
     const formData = new FormData(e.target);
-    const city = formData.get("city"); 
-    const state = formData.get("state");
-    fetch("https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=" + API_KEY)
+    const city = formData.get("city").replace(' ', '+');
+    const state = formData.get("state").replace(' ', '+');
+    fetch("https://maps.googleapis.com/maps/api/geocode/json?address=" + city + "," + state + "&key=" + API_KEY)
       .then((response) => response.json())
       .then((response) => {
         const lat = response.results[0].geometry.location.lat;
         const lng = response.results[0].geometry.location.lng;
         debugLog(lat);
         debugLog(lng);
-        fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'}).then((response) =>{
-          if(response.redirected){
+        fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'}).then((response) => {
+          if (response.redirected) {
             window.location.href = response.url;
           }
         });
-      }
-    );
-    e.preventDefault();
+      })
+      .catch((error) => {
+        debugLog('Error:', error);
+      });
   });
 }
 
