@@ -12,6 +12,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+const API_KEY = "AIzaSyDOLA6fsSWwR-ONnnzTR0FnjxWhXc33wJw";
+
+function loadPage() {
+  createMap();
+  renderAddressForm();
+}
+
+function renderAddressForm() {
+  document.getElementById('address-form').addEventListener('submit', (e) => {
+    const formData = new FormData(e.target);
+    const city = formData.get("city"); 
+    const state = formData.get("state");
+    fetch("https://maps.googleapis.com/maps/api/geocode/json?address=1600+Amphitheatre+Parkway,+Mountain+View,+CA&key=" + API_KEY)
+      .then((response) => response.json())
+      .then((response) => {
+        const lat = response.results[0].geometry.location.lat;
+        const lng = response.results[0].geometry.location.lng;
+        debugLog(lat);
+        debugLog(lng);
+        fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'}).then((response) =>{
+          if(response.redirected){
+            window.location.href = response.url;
+          }
+        });
+      }
+    );
+    e.preventDefault();
+  });
+}
+
 /** Creates a map in Aubergine style and adds it to the page. */
 function createMap() {
   const USCenterX = 38.5, USCenterY = -98;
@@ -256,8 +286,9 @@ function createMap() {
   );
 }
 
+
 function debugLog(message) {
-  shouldLog = false;
+  shouldLog = true;
   if (!shouldLog) {
     return;
   }
