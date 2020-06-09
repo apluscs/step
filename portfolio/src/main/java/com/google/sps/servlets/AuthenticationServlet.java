@@ -30,7 +30,7 @@ public class AuthenticationServlet extends HttpServlet {
     private boolean isUserLoggedIn;
     private String logoutUrl, userEmail;
     public LoggedInResponse(String logoutUrl, String userEmail) {
-      isUserLoggedIn = true;
+      this.isUserLoggedIn = true;
       this.logoutUrl = logoutUrl;
       this.userEmail = userEmail;
     }
@@ -41,7 +41,7 @@ public class AuthenticationServlet extends HttpServlet {
     private boolean isUserLoggedIn;
     private String loginUrl;
     public LoggedOutResponse(String loginUrl) {
-      isUserLoggedIn = false;
+      this.isUserLoggedIn = false;
       this.loginUrl = loginUrl;
     }
   }
