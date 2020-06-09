@@ -13,7 +13,6 @@
 // limitations under the License.
 
 function loadCommentsPage(pgNumber = 1){
-  renderAuthentication();
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {

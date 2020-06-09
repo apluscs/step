@@ -14,7 +14,6 @@
 
 function loadPage() {
   renderRandomGreeting();
-  renderAuthentication();
 }
 
 function renderRandomGreeting(){
