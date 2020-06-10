@@ -20,6 +20,10 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.datastore.TransactionOptions;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.IOException;
@@ -103,15 +107,16 @@ public class DataServlet extends HttpServlet {
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity commentEntity = new Entity("Comment");
+    String comment = sanitizer.sanitize(request.getParameter("user_comment"));
     commentEntity.setProperty("email", request.getParameter("user_email"));
-    commentEntity.setProperty("comment", sanitizer.sanitize(request.getParameter("user_comment")));
+    commentEntity.setProperty("comment", comment);
     commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
+    updateWordCount(comment);
     response.sendRedirect("/comments.html");
   }
 
   private void updateWordCount(String comment) {
-    System.out.println(comment);
     String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
     for(String word : words){
       Entity wordEntity;
@@ -125,7 +130,6 @@ public class DataServlet extends HttpServlet {
         wordEntity.setProperty("count", 0L);
       }
       try {
-        System.out.println(wordKey + ": " + wordEntity.getProperty("count"));
         wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
         datastore.put(txn, wordEntity);
         txn.commit();
