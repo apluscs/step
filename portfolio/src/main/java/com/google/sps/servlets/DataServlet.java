@@ -140,7 +140,7 @@ public class DataServlet extends HttpServlet {
           txn.commit();
           break;
         } catch (Exception e) {
-          // In case transaction doesn't commit after TRANSACTION_RETRIES, just give up
+          // In case transaction doesn't commit after TRANSACTION_RETRIES, just give up.
           if (retry++ == TRANSACTION_RETRIES) {
             txn.rollback();
           }
