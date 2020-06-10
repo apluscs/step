@@ -79,17 +79,17 @@ function createPageElement(page, currPage = -1){
 }
 
 function renderComments(comments){
-  userEmail = "";
   fetch('/authenticate').then((response) => response.json()).then((response) => {
+    userEmail = "";
+    debugLog(response.isUserLoggedIn);
     if (response.isUserLoggedIn){
       userEmail = response.userEmail;
     } 
-  });
-  debugLog(comments);
-  const commentsList = document.getElementById('comments-container');
-  commentsList.innerHTML = '';
-  comments.forEach((comment) => {
-    commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date, userEmail));
+    const commentsList = document.getElementById('comments-container');
+    commentsList.innerHTML = '';
+    comments.forEach((comment) => {
+      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date, userEmail));
+    });
   });
 }
 
@@ -106,11 +106,10 @@ function createCommentElement(email, comment, time, userEmail) {
   const template = document.getElementById("comment-template");
   const card = template.cloneNode(true);
   card.setAttribute("id", "");
-  debugLog(card.querySelector("#comment-title"));
   card.querySelector("#comment-title").innerHTML = "From: " + email;
   card.querySelector("#comment-text").innerHTML = comment;
   card.querySelector("#comment-time").innerHTML = time;
-  
+
   // Give the user the option to delete comments they made.
   if (email === userEmail) {
     card.querySelector("#comment-delete-link").removeAttribute("hidden");
