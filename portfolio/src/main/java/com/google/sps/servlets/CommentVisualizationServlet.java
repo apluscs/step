@@ -46,9 +46,6 @@ public class CommentVisualizationServlet extends HttpServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Query wordsQuery = new Query("word").addSort("count", SortDirection.DESCENDING);
     List<Entity> results = datastore.prepare(wordsQuery).asList(FetchOptions.Builder.withLimit(10));
-    for(Entity word : results){
-      // System.out.println(word.getKey() + ", " + word.getProperty("count"));
-    }
     response.setContentType("application/json");
     response.getWriter().println(convertToJsonUsingGson(results));
   }
@@ -56,10 +53,5 @@ public class CommentVisualizationServlet extends HttpServlet {
   private static String convertToJsonUsingGson(List<Entity> results) {
     Gson gson = new Gson();
     return gson.toJson(results);
-  }
-  
-  @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-
   }
 }

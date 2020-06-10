@@ -40,17 +40,11 @@ function renderCommentsChart(){
       'title': 'Most Frequent Words in Comments',
       'width': 600,
       'height': 500,
-      hAxis: {
-        title: 'Count',
-        minValue: 0
-      },
-      vAxis: {
-        title: 'Word'
-      }
+      hAxis: {title: 'Count', minValue: 0},
+      vAxis: {title: 'Word'}
     };
 
-    const chart = new google.visualization.BarChart(
-        document.getElementById('chart-container'));
+    const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
     chart.draw(data, options);
   });
 }
@@ -161,7 +155,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }
