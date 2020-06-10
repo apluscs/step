@@ -57,6 +57,22 @@
             <option value="20">20</option>
           </select>
         </div>
+        <div class="card" id="comment-template">
+          <div class="card-body">
+            <h6 class="card-title" id="comment-title">From:</h6>
+            <p class="card-text" id="comment-text"></p>
+            <div class="row">
+              <div class="col-6">
+                <small class="card-text" id="comment-time"></small>
+              </div>
+              <div class="col-6">
+                <small>
+                  <a class="card-text" id="comment-delete-link" onclick="deleteComment()" hidden="true" href="#">Delete</a>
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
         <ul id="comments-container"></ul>
         <nav class="text-center">
           <ul class="pagination justify-content-center" id="pagination-list"></ul>
