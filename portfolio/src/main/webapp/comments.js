@@ -124,7 +124,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }
