@@ -54,25 +54,13 @@ public class MarkerServlet extends HttpServlet {
   
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // response.setContentType("application/json");
-    // Query markersQuery = new Query("Marker");
-    // List<Entity> results = 
-    //   datastore.prepare(markersQuery).asList(
-    //     FetchOptions.Builder.withDefaults());
-    // List<Comment> comments = new ArrayList<Comment>();
-    // for(Entity comment : results){
-    //   comments.add(makeComment(comment));
-    // }
-    // response.setContentType("application/json;");
-    // response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
   }
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity markerEntity = new Entity("Marker");
-    String lat = request.getParameter("lat"), lng = request.getParameter("lng");
-    markerEntity.setProperty("lat", lat);
-    markerEntity.setProperty("lng", lng);
+    markerEntity.setProperty("lat", request.getParameter("lat"));
+    markerEntity.setProperty("lng", request.getParameter("lng"));
     datastore.put(markerEntity);
     response.sendRedirect("/map.html");
   }
