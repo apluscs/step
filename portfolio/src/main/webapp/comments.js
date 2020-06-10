@@ -28,23 +28,28 @@ function loadCommentsPage(pgNumber = 1){
 function renderCommentsChart(){
   fetch('/visualize-comments').then(response => response.json())
   .then((json) => {
-    debugLog(json);
     const data = new google.visualization.DataTable();
     data.addColumn('string', 'Word');
     data.addColumn('number', 'Count');
     
     json.forEach((word) => {
       data.addRow([word.key.name, word.propertyMap.count]);
-      debugLog([word.key.name, word.propertyMap.count]);
     });
 
     const options = {
       'title': 'Most Frequent Words in Comments',
       'width': 600,
-      'height': 500
+      'height': 500,
+      hAxis: {
+        title: 'Count',
+        minValue: 0
+      },
+      vAxis: {
+        title: 'Word'
+      }
     };
 
-    const chart = new google.visualization.Histogram(
+    const chart = new google.visualization.BarChart(
         document.getElementById('chart-container'));
     chart.draw(data, options);
   });
