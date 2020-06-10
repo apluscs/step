@@ -109,4 +109,32 @@ public class DataServlet extends HttpServlet {
     datastore.put(commentEntity);
     response.sendRedirect("/comments.html");
   }
+
+  private void updateWordCount(String comment) {
+    System.out.println(comment);
+    String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
+    for(String word : words){
+      Entity wordEntity;
+      Key wordKey = KeyFactory.createKey("word", word + "_word");
+      Transaction txn = datastore.beginTransaction(TransactionOptions.Builder.withXG(true));
+      try {
+        wordEntity = datastore.get(txn, wordKey);
+      } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
+        // In case word is not yet in datastore...
+        wordEntity = new Entity(wordKey);
+        wordEntity.setProperty("count", 0L);
+      }
+      try {
+        System.out.println(wordKey + ": " + wordEntity.getProperty("count"));
+        wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
+        datastore.put(txn, wordEntity);
+        txn.commit();
+      } finally {
+        // In case transaction doesn't commit...
+        if (txn.isActive()) {
+          txn.rollback();
+        }
+      }
+    }
+  }
 }
