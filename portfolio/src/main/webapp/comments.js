@@ -25,26 +25,26 @@ function loadCommentsPage(pgNumber = 1){
 }
 
 function renderCommentsChart(){
-  fetch('/visualize-comments').then(response => response.json())
-  .then((wordCount) => {
+  // fetch('/visualize-comments').then(response => response.json())
+  // .then((wordCount) => {
     
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Word');
-    data.addColumn('number', 'Count');
-    Object.keys(wordCount).forEach((word) => {
-      data.addRow([word, wordCount[word]]);
-    });
-    debugLog("wordCount" + data);
-    const options = {
-      'title': 'Most Frequent Words in Comments',
-      'width': 600,
-      'height': 500
-    };
+  //   const data = new google.visualization.DataTable();
+  //   data.addColumn('string', 'Word');
+  //   data.addColumn('number', 'Count');
+  //   Object.keys(wordCount).forEach((word) => {
+  //     data.addRow([word, wordCount[word]]);
+  //   });
+  //   debugLog("wordCount" + data);
+  //   const options = {
+  //     'title': 'Most Frequent Words in Comments',
+  //     'width': 600,
+  //     'height': 500
+  //   };
 
-    const chart = new google.visualization.Histogram(
-        document.getElementById('chart-container'));
-    chart.draw(data, options);
-  });
+  //   const chart = new google.visualization.Histogram(
+  //       document.getElementById('chart-container'));
+  //   chart.draw(data, options);
+  // });
 }
 
 function renderPagination(lastPage, currPage){

@@ -28,49 +28,32 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
 import com.google.appengine.api.datastore.FetchOptions;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 
 /** Servlet that handles the visualization of comment data */
 @WebServlet("/visualize-comments")
 public class CommentVisualizationServlet extends HttpServlet {
  
-  private DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-  private HashMap<String, Integer> wordCounter;
+  private DatastoreService datastore;
 
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    wordCounter = new HashMap<String, Integer>();
-    Scanner scanner = new Scanner(getServletContext().getResourceAsStream(
-        "/WEB-INF/comment-words-freqeuncy.csv"));
-    System.out.println("scanner opened");
-    while (scanner.hasNextLine()) {
-      String line = scanner.nextLine();
-      String[] cells = line.split(",");
-
-      Integer count = Integer.valueOf(cells[1]);
-
-      wordCounter.put(cells[0], count);
-    }
-    scanner.close();
   }
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Query wordsQuery = new Query("word").addSort("count", SortDirection.DESCENDING);
+    List<Entity> results = datastore.prepare(wordsQuery).asList(FetchOptions.Builder.withLimit(10));
+    for(Entity word : results){
+      System.out.println(word.getKey() + ", " + word.getProperty("count"));
+    }
     response.setContentType("application/json");
-    Gson gson = new Gson();
-    String json = gson.toJson(wordCounter);
-    response.getWriter().println(json);
   }
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query commentKeysQuery = new Query("Comment").setKeysOnly();
-    PreparedQuery commentKeysResults =  datastore.prepare(commentKeysQuery);
-    for(Entity commentKey : commentKeysResults.asIterable()){
-      datastore.delete(commentKey.getKey());
-    }
-    response.sendRedirect("/comments.html");
+
   }
 }
