@@ -58,6 +58,7 @@ public class DataServlet extends HttpServlet {
     }
   }
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
+  private static final int TRANSACTION_RETRIES = 4;
   private DatastoreService datastore;
   private PolicyFactory sanitizer;
   
@@ -118,6 +119,7 @@ public class DataServlet extends HttpServlet {
 
   private void updateWordCount(String comment) {
     String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
+    
     for(String word : words){
       Entity wordEntity;
       Key wordKey = KeyFactory.createKey("word", word + "_word");
@@ -129,14 +131,19 @@ public class DataServlet extends HttpServlet {
         wordEntity = new Entity(wordKey);
         wordEntity.setProperty("count", 0L);
       }
-      try {
-        wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
-        datastore.put(txn, wordEntity);
-        txn.commit();
-      } finally {
-        // In case transaction doesn't commit...
-        if (txn.isActive()) {
-          txn.rollback();
+      
+      int retry = 0;
+      while(true){
+        try {
+          wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
+          datastore.put(txn, wordEntity);
+          txn.commit();
+          break;
+        } catch (Exception e) {
+          // In case transaction doesn't commit after TRANSACTION_RETRIES, just give up
+          if (retry++ == TRANSACTION_RETRIES) {
+            txn.rollback();
+          }
         }
       }
     }
