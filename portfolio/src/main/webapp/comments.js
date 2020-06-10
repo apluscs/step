@@ -16,6 +16,7 @@ google.charts.load("current", {packages:["corechart"]});
 google.charts.setOnLoadCallback(renderCommentsChart);
 
 function loadCommentsPage(pgNumber = 1){
+  renderCommentsChart();
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
   debugLog("commentsPerPage=" + commentsPerPage);
   fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
@@ -25,26 +26,28 @@ function loadCommentsPage(pgNumber = 1){
 }
 
 function renderCommentsChart(){
-  // fetch('/visualize-comments').then(response => response.json())
-  // .then((wordCount) => {
+  fetch('/visualize-comments').then(response => response.json())
+  .then((json) => {
+    debugLog(json);
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Word');
+    data.addColumn('number', 'Count');
     
-  //   const data = new google.visualization.DataTable();
-  //   data.addColumn('string', 'Word');
-  //   data.addColumn('number', 'Count');
-  //   Object.keys(wordCount).forEach((word) => {
-  //     data.addRow([word, wordCount[word]]);
-  //   });
-  //   debugLog("wordCount" + data);
-  //   const options = {
-  //     'title': 'Most Frequent Words in Comments',
-  //     'width': 600,
-  //     'height': 500
-  //   };
+    json.forEach((word) => {
+      data.addRow([word.key.name, word.propertyMap.count]);
+      debugLog([word.key.name, word.propertyMap.count]);
+    });
 
-  //   const chart = new google.visualization.Histogram(
-  //       document.getElementById('chart-container'));
-  //   chart.draw(data, options);
-  // });
+    const options = {
+      'title': 'Most Frequent Words in Comments',
+      'width': 600,
+      'height': 500
+    };
+
+    const chart = new google.visualization.Histogram(
+        document.getElementById('chart-container'));
+    chart.draw(data, options);
+  });
 }
 
 function renderPagination(lastPage, currPage){

@@ -29,7 +29,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.google.gson.Gson;
 import com.google.appengine.api.datastore.FetchOptions;
 import java.util.List;
-import java.util.Scanner;
+import java.util.ArrayList;
 
 /** Servlet that handles the visualization of comment data */
 @WebServlet("/visualize-comments")
@@ -47,9 +47,15 @@ public class CommentVisualizationServlet extends HttpServlet {
     Query wordsQuery = new Query("word").addSort("count", SortDirection.DESCENDING);
     List<Entity> results = datastore.prepare(wordsQuery).asList(FetchOptions.Builder.withLimit(10));
     for(Entity word : results){
-      System.out.println(word.getKey() + ", " + word.getProperty("count"));
+      // System.out.println(word.getKey() + ", " + word.getProperty("count"));
     }
     response.setContentType("application/json");
+    response.getWriter().println(convertToJsonUsingGson(results));
+  }
+  
+  private static String convertToJsonUsingGson(List<Entity> results) {
+    Gson gson = new Gson();
+    return gson.toJson(results);
   }
   
   @Override
