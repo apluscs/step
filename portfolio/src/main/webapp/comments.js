@@ -95,11 +95,17 @@ function renderComments(comments){
 }
 
 function deleteComment(comment){
-  const request = new Request(`/delete-data?id=${comment.id}&authorEmail=${comment.email}`, {method: 'POST'});
-  fetch(request).then(response => {
-    if (response.redirected) {
+  const request = new Request(`/delete-data?id=${comment.id}`, {method: 'POST'});
+  fetch(request)
+  .then(response => {
+    if (!response.ok){
+      throw Error(`Request rejected with status ${response.status}`);
+    } else if (response.redirected) {
       window.location.href = response.url;
     }
+  })
+  .catch((error) => {
+    alert("Error when deleting comment: " + error);
   });
 }
 

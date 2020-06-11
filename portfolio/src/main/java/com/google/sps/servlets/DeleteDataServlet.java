@@ -42,15 +42,21 @@ public class DeleteDataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    // Verify the deleter is the author of the comment being deleted. If not, early return.
-    UserService userService = UserServiceFactory.getUserService();
-    if (!userService.isUserLoggedIn()
-        || !request
-            .getParameter("authorEmail")
-            .equals(userService.getCurrentUser().getEmail())) {
-      return;
+    Key commentKey = KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
+    try {
+      Entity comment = datastore.get(commentKey);
+      
+      // Verify the deleter is the author of the comment being deleted. If not, early return.
+      UserService userService = UserServiceFactory.getUserService();
+      if (!userService.isUserLoggedIn()
+          || !comment.getProperty("email").equals(userService.getCurrentUser().getEmail())) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return;
+      }
+      datastore.delete(commentKey);
+    } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
+      // Don't do anything because there's nothing to delete if the commentKey is invalid.
     }
-    datastore.delete(KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id"))));
     response.sendRedirect("/comments.html");
   }
 }
