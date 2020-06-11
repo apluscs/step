@@ -45,13 +45,14 @@ function renderAddressForm() {
       .catch((error) => {
         debugLog('Error:', error);
       });
+      // e.preventDefault();
   });
 }
 
 function renderMarkers() {
   fetch('/markers').then(response => response.json()).then((markers) => {
     markers.forEach((marker) => {
-      const marker = new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
+      const mark = new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
     });
   });
 }

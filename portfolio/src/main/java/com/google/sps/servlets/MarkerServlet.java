@@ -71,10 +71,17 @@ public class MarkerServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    if (invalid(request.getParameter("lat")) || invalid(request.getParameter("lat"))){
+      return;
+    }
     Entity markerEntity = new Entity("Marker");
     markerEntity.setProperty("lat", request.getParameter("lat"));
     markerEntity.setProperty("lng", request.getParameter("lng"));
     datastore.put(markerEntity);
     response.sendRedirect("/map.html");
+  }
+  
+  private static boolean invalid(String coordinate){
+    return coordinate.equals(null) || coordinate.equals("");
   }
 }
