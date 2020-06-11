@@ -131,18 +131,20 @@ public class DataServlet extends HttpServlet {
         wordEntity = new Entity(wordKey);
         wordEntity.setProperty("count", 0L);
       }
+      wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
+      datastore.put(txn, wordEntity);
       
       int retry = 0;
       while(true){
         try {
-          wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
-          datastore.put(txn, wordEntity);
           txn.commit();
           break;
         } catch (Exception e) {
           // In case transaction doesn't commit after TRANSACTION_RETRIES, just give up.
+          System.out.println("Transaction to update count did not commit for word: " + word);
           if (retry++ == TRANSACTION_RETRIES) {
-            txn.rollback();
+            System.out.println("Giving up trying to commit count for word: " + word);
+            return;
           }
         }
       }
