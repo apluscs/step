@@ -40,7 +40,6 @@ public class DeleteDataServlet extends HttpServlet {
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    WordCountUpdater wordCountUpdater = new WordCountUpdater();
   }
   
   @Override
