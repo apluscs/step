@@ -32,7 +32,7 @@ function renderCommentsChart(){
     table.addColumn('number', 'Count');
     
     json.forEach((word) => {
-      table.addRow([word.key.name, word.propertyMap.count]);
+      table.addRow([word.key.name.substring(0, word.key.name.length - 5), word.propertyMap.count]);
     });
 
     const options = {
