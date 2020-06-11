@@ -48,10 +48,8 @@ public class DeleteDataServlet extends HttpServlet {
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Query commentKeysQuery = new Query("Comment").setKeysOnly();
     String id = request.getParameter("id");
-    PreparedQuery commentKeysResults =  datastore.prepare(commentKeysQuery);
-    for(Entity commentKey : commentKeysResults.asIterable()){
-      datastore.delete(commentKey.getKey());
-    }
+    System.out.println(id);
+    // datastore.delete(id);
     response.sendRedirect("/comments.html");
   }
 }

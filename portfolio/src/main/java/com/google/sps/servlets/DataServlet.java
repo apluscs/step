@@ -38,12 +38,13 @@ import org.owasp.html.PolicyFactory;
 @WebServlet("/data")
 public class DataServlet extends HttpServlet {
   private static class Comment {
-    private final String email, comment, date, id;
-    public Comment(String email, String comment, String date, String id){
+    private final String email, comment, date;
+    private final long id;
+    public Comment(String email, String comment, String date, long id){
       this.email = email;
       this.comment = comment;
       this.date = date;
-      this.id = id.substring(id.indexOf('(') + 1, id.length() - 1);
+      this.id = id;
     }
   }
   private static class Response {
@@ -94,7 +95,7 @@ public class DataServlet extends HttpServlet {
     return new Comment( (String)comment.getProperty("email"), 
                         (String)comment.getProperty("comment"),
                         sdf.format(resultDate),
-                        comment.getKey().toString());
+                        comment.getKey().getId());
   }
   
   private static String convertToJsonUsingGson(Response response) {
