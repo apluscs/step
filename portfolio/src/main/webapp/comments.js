@@ -26,14 +26,13 @@ function loadCommentsPage(pgNumber = 1){
 }
 
 function renderCommentsChart(){
-  fetch('/visualize-comments').then(response => response.json())
-  .then((json) => {
-    const data = new google.visualization.DataTable();
-    data.addColumn('string', 'Word');
-    data.addColumn('number', 'Count');
+  fetch('/visualize-comments').then(response => response.json()).then((json) => {
+    const table = new google.visualization.DataTable();
+    table.addColumn('string', 'Word');
+    table.addColumn('number', 'Count');
     
     json.forEach((word) => {
-      data.addRow([word.key.name, word.propertyMap.count]);
+      table.addRow([word.key.name, word.propertyMap.count]);
     });
 
     const options = {
@@ -45,7 +44,7 @@ function renderCommentsChart(){
     };
 
     const chart = new google.visualization.BarChart(document.getElementById('chart-container'));
-    chart.draw(data, options);
+    chart.draw(table, options);
   });
 }
 
