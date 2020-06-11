@@ -88,34 +88,37 @@ function renderComments(comments){
     const commentsList = document.getElementById('comments-container');
     commentsList.innerHTML = '';
     comments.forEach((comment) => {
-      commentsList.appendChild(createCommentElement(comment.email, comment.comment, comment.date, userEmail));
+      commentsList.appendChild(createCommentElement(comment, userEmail));
     });
+    document.getElementById("comment-template").setAttribute("hidden", "true");
   });
 }
 
 function deleteComment(){
-  const request = new Request('/delete-data', {method: 'POST'});
-  fetch(request).then(response => {
-    if (response.redirected) {
-        window.location.href = response.url;
-    }
-  });
+  // const request = new Request('/delete-data', {method: 'POST'});
+  // fetch(request).then(response => {
+  //   if (response.redirected) {
+  //       window.location.href = response.url;
+  //   }
+  // });
 }
 
-function createCommentElement(email, comment, time, userEmail) {
+function createCommentElement(comment, userEmail) {
   const template = document.getElementById("comment-template");
   const card = template.cloneNode(true);
+  const email = comment.propertyMap.email;
   card.setAttribute("id", "");
   card.querySelector("#comment-title").innerHTML = "From: " + email;
-  card.querySelector("#comment-text").innerHTML = comment;
-  card.querySelector("#comment-time").innerHTML = time;
+  card.querySelector("#comment-text").innerHTML = comment.propertyMap.comment;
+  card.querySelector("#comment-time").innerHTML = comment.propertyMap.time + "time";
 
   // Give the user the option to delete comments they made.
   if (email === userEmail) {
     const deleteLink = card.querySelector("#comment-delete-link");
     deleteLink.removeAttribute("hidden");
+    debugLog(card.querySelector("#comment-delete-link"))
     deleteLink.addEventListener("click", function(){
-      debugLog("deleteLink was clicked");
+      debugLog("deleteLink was clicked for " + comment.key.id)
     });
   }
   document.getElementById("comments-container").appendChild(card);
@@ -128,7 +131,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = true;
+  shouldLog = false;
   if (!shouldLog) {
     return;
   }
