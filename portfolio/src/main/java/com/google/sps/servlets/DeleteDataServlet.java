@@ -17,9 +17,7 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Key;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,10 +44,7 @@ public class DeleteDataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query commentKeysQuery = new Query("Comment").setKeysOnly();
-    String id = request.getParameter("id");
-    System.out.println(id);
-    // datastore.delete(id);
+    datastore.delete(KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
     response.sendRedirect("/comments.html");
   }
 }

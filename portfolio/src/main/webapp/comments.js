@@ -95,7 +95,6 @@ function renderComments(comments){
 }
 
 function deleteComment(id){
-  debugLog("deleting " + id);
   const request = new Request('/delete-data?id=' + id, {method: 'POST'});
   fetch(request).then(response => {
     if (response.redirected) {
@@ -117,7 +116,7 @@ function createCommentElement(comment, userEmail) {
   if (email === userEmail) {
     const deleteLink = card.querySelector("#comment-delete-link");
     deleteLink.removeAttribute("hidden");
-    deleteLink.addEventListener("click", function(){
+    deleteLink.addEventListener("click", () => {
       deleteComment(comment.id);
     });
   }
