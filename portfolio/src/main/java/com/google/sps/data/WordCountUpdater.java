@@ -32,7 +32,6 @@ public class WordCountUpdater{
   }
   
   public void updateWordCount(String comment, char op) {
-    System.out.println(op + comment);
     String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
     
     for(String word : words){

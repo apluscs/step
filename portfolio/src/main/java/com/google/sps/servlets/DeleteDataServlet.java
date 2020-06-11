@@ -55,6 +55,7 @@ public class DeleteDataServlet extends HttpServlet {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         return;
       }
+      new WordCountUpdater().updateWordCount((String) comment.getProperty("comment"), '-');
       datastore.delete(commentKey);
     } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);
