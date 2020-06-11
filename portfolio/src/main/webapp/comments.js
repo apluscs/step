@@ -112,7 +112,11 @@ function createCommentElement(email, comment, time, userEmail) {
 
   // Give the user the option to delete comments they made.
   if (email === userEmail) {
-    card.querySelector("#comment-delete-link").removeAttribute("hidden");
+    const deleteLink = card.querySelector("#comment-delete-link");
+    deleteLink.removeAttribute("hidden");
+    deleteLink.addEventListener("click", function(){
+      debugLog("deleteLink was clicked");
+    });
   }
   document.getElementById("comments-container").appendChild(card);
   
@@ -124,7 +128,7 @@ function addClass(element, className){
 }
 
 function debugLog(message) {
-  shouldLog = false;
+  shouldLog = true;
   if (!shouldLog) {
     return;
   }
