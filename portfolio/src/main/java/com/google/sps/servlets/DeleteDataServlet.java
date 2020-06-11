@@ -19,17 +19,14 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Key;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
 import com.google.gson.Gson;
-import com.google.appengine.api.datastore.FetchOptions;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 
 /** Servlet that handles comments data */
 @WebServlet("/delete-data")
@@ -44,18 +41,15 @@ public class DeleteDataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    if(!verifyDeleter(request.getParameter("authorEmail"))){
+    // Verify the deleter is the author of the comment being deleted. If not, early return.
+    UserService userService = UserServiceFactory.getUserService();
+    if (!userService.isUserLoggedIn()
+        || !request
+            .getParameter("authorEmail")
+            .equals(userService.getCurrentUser().getEmail())) {
       return;
     }
     datastore.delete(KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id"))));
     response.sendRedirect("/comments.html");
-  }
-  
-  private boolean verifyDeleter(String authorEmail) {
-    System.out.println(authorEmail);
-    // UserService userService = UserServiceFactory.getUserService();
-    // if (!userService.isUserLoggedIn() || ) {
-      return false;
-    // }
   }
 }
