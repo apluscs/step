@@ -17,21 +17,17 @@ package com.google.sps.servlets;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
-import com.google.appengine.api.datastore.PreparedQuery;
-import com.google.appengine.api.datastore.Query;
-import com.google.appengine.api.datastore.Query.SortDirection;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Key;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import com.google.gson.Gson;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
 import java.io.IOException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
-import java.util.List;
-import com.google.gson.Gson;
-import com.google.appengine.api.datastore.FetchOptions;
+
 
 /** Servlet that handles comments data */
 @WebServlet("/delete-data")
@@ -45,11 +41,22 @@ public class DeleteDataServlet extends HttpServlet {
   }
   
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query commentKeysQuery = new Query("Comment").setKeysOnly();
-    PreparedQuery commentKeysResults =  datastore.prepare(commentKeysQuery);
-    for(Entity commentKey : commentKeysResults.asIterable()){
-      datastore.delete(commentKey.getKey());
+  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    Key commentKey = KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
+    try {
+      Entity comment = datastore.get(commentKey);
+      
+      // Verify the deleter is the author of the comment being deleted. If not, early return.
+      UserService userService = UserServiceFactory.getUserService();
+      if (!userService.isUserLoggedIn()
+          || !comment.getProperty("email").equals(userService.getCurrentUser().getEmail())) {
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return;
+      }
+      datastore.delete(commentKey);
+    } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
+      return;
     }
     response.sendRedirect("/comments.html");
   }

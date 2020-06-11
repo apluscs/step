@@ -43,10 +43,12 @@ import org.owasp.html.PolicyFactory;
 public class DataServlet extends HttpServlet {
   private static class Comment {
     private final String email, comment, date;
-    public Comment(String email, String comment, String date){
+    private final long id;
+    public Comment(String email, String comment, String date, long id){
       this.email = email;
       this.comment = comment;
       this.date = date;
+      this.id = id;
     }
   }
   private static class Response {
@@ -67,6 +69,7 @@ public class DataServlet extends HttpServlet {
     datastore = DatastoreServiceFactory.getDatastoreService();
     sanitizer = Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
   }
+  
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page"));
@@ -97,7 +100,8 @@ public class DataServlet extends HttpServlet {
     Date resultDate = new Date((Long)comment.getProperty("time_millis"));
     return new Comment( (String)comment.getProperty("email"), 
                         (String)comment.getProperty("comment"),
-                        sdf.format(resultDate));
+                        sdf.format(resultDate),
+                        comment.getKey().getId());
   }
   
   private static String convertToJsonUsingGson(Response response) {
