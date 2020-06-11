@@ -24,6 +24,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.sps.data.WordCountUpdater;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.IOException;
@@ -117,7 +118,7 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("comment", comment);
     commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
-    updateWordCount(comment);
+    WordCountUpdater.updateWordCount(comment, '+');
     response.sendRedirect("/comments.html");
   }
 
