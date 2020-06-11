@@ -140,7 +140,6 @@ public class DataServlet extends HttpServlet {
           txn.commit();
           break;
         } catch (Exception e) {
-          // In case transaction doesn't commit after TRANSACTION_RETRIES, just give up.
           System.out.println("Transaction to update count did not commit for word: " + word);
           if (retry++ == TRANSACTION_RETRIES) {
             System.out.println("Giving up trying to commit count for word: " + word);
