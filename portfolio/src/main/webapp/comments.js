@@ -95,7 +95,7 @@ function renderComments(comments){
 }
 
 function deleteComment(comment){
-  const request = new Request(`/delete-data?id=${comment.id}`, {method: 'POST'});
+  const request = new Request(`/delete-data?id=${comment.id}`, {method: 'DELETE'});
   fetch(request)
   .then(response => {
     if (!response.ok){

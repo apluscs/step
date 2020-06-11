@@ -41,7 +41,7 @@ public class DeleteDataServlet extends HttpServlet {
   }
   
   @Override
-  public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Key commentKey = KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
     try {
       Entity comment = datastore.get(commentKey);
@@ -55,7 +55,7 @@ public class DeleteDataServlet extends HttpServlet {
       }
       datastore.delete(commentKey);
     } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
-      // Don't do anything because there's nothing to delete if the commentKey is invalid.
+      response.sendError(HttpServletResponse.SC_NOT_FOUND);
     }
     response.sendRedirect("/comments.html");
   }
