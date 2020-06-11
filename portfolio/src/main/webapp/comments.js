@@ -94,31 +94,31 @@ function renderComments(comments){
   });
 }
 
-function deleteComment(){
-  // const request = new Request('/delete-data', {method: 'POST'});
-  // fetch(request).then(response => {
-  //   if (response.redirected) {
-  //       window.location.href = response.url;
-  //   }
-  // });
+function deleteComment(id){
+  debugLog("deleting " + id);
+  const request = new Request('/delete-data?id=' + id, {method: 'POST'});
+  fetch(request).then(response => {
+    if (response.redirected) {
+      window.location.href = response.url;
+    }
+  });
 }
 
 function createCommentElement(comment, userEmail) {
   const template = document.getElementById("comment-template");
   const card = template.cloneNode(true);
-  const email = comment.propertyMap.email;
+  const email = comment.email;
   card.setAttribute("id", "");
   card.querySelector("#comment-title").innerHTML = "From: " + email;
-  card.querySelector("#comment-text").innerHTML = comment.propertyMap.comment;
-  card.querySelector("#comment-time").innerHTML = comment.propertyMap.time + "time";
+  card.querySelector("#comment-text").innerHTML = comment.comment;
+  card.querySelector("#comment-date").innerHTML = comment.date;
 
   // Give the user the option to delete comments they made.
   if (email === userEmail) {
     const deleteLink = card.querySelector("#comment-delete-link");
     deleteLink.removeAttribute("hidden");
-    debugLog(card.querySelector("#comment-delete-link"))
     deleteLink.addEventListener("click", function(){
-      debugLog("deleteLink was clicked for " + comment.key.id)
+      deleteComment(comment.id);
     });
   }
   document.getElementById("comments-container").appendChild(card);
