@@ -44,7 +44,18 @@ public class DeleteDataServlet extends HttpServlet {
   
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    datastore.delete(KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
+    if(!verifyDeleter(request.getParameter("authorEmail"))){
+      return;
+    }
+    datastore.delete(KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id"))));
     response.sendRedirect("/comments.html");
+  }
+  
+  private boolean verifyDeleter(String authorEmail) {
+    System.out.println(authorEmail);
+    // UserService userService = UserServiceFactory.getUserService();
+    // if (!userService.isUserLoggedIn() || ) {
+      return false;
+    // }
   }
 }

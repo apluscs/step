@@ -94,8 +94,8 @@ function renderComments(comments){
   });
 }
 
-function deleteComment(id){
-  const request = new Request('/delete-data?id=' + id, {method: 'POST'});
+function deleteComment(comment){
+  const request = new Request('/delete-data?id=' + comment.id + "&authorEmail=" + comment.email, {method: 'POST'});
   fetch(request).then(response => {
     if (response.redirected) {
       window.location.href = response.url;
@@ -106,18 +106,17 @@ function deleteComment(id){
 function createCommentElement(comment, userEmail) {
   const template = document.getElementById("comment-template");
   const card = template.cloneNode(true);
-  const email = comment.email;
   card.setAttribute("id", "");
-  card.querySelector("#comment-title").innerHTML = "From: " + email;
+  card.querySelector("#comment-title").innerHTML = "From: " + comment.email;
   card.querySelector("#comment-text").innerHTML = comment.comment;
   card.querySelector("#comment-date").innerHTML = comment.date;
 
   // Give the user the option to delete comments they made.
-  if (email === userEmail) {
+  if (comment.email === userEmail) {
     const deleteLink = card.querySelector("#comment-delete-link");
     deleteLink.removeAttribute("hidden");
     deleteLink.addEventListener("click", () => {
-      deleteComment(comment.id);
+      deleteComment(comment);
     });
   }
   document.getElementById("comments-container").appendChild(card);
