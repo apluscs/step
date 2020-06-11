@@ -95,7 +95,7 @@ function renderComments(comments){
 }
 
 function deleteComment(comment){
-  const request = new Request('/delete-data?id=' + comment.id + "&authorEmail=" + comment.email, {method: 'POST'});
+  const request = new Request(`/delete-data?id=${comment.id}&authorEmail=${comment.email}`, {method: 'POST'});
   fetch(request).then(response => {
     if (response.redirected) {
       window.location.href = response.url;
