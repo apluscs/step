@@ -56,6 +56,7 @@ public class DeleteDataServlet extends HttpServlet {
       datastore.delete(commentKey);
     } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);
+      return;
     }
     response.sendRedirect("/comments.html");
   }
