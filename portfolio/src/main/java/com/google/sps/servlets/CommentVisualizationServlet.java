@@ -44,14 +44,12 @@ public class CommentVisualizationServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    Query wordsQuery = new Query("word").addSort("count", SortDirection.DESCENDING);
-    List<Entity> results = datastore.prepare(wordsQuery).asList(FetchOptions.Builder.withLimit(10));
+    List<Entity> results = datastore.prepare(
+      new Query("word")
+        .addSort("count", SortDirection.DESCENDING))
+        .asList(FetchOptions.Builder.withLimit(10)
+    );
     response.setContentType("application/json");
-    response.getWriter().println(convertToJsonUsingGson(results));
-  }
-  
-  private static String convertToJsonUsingGson(List<Entity> results) {
-    Gson gson = new Gson();
-    return gson.toJson(results);
+    response.getWriter().println(new Gson().toJson(results));
   }
 }
