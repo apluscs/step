@@ -22,8 +22,7 @@ import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.Query.SortDirection;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.api.datastore.Transaction;
-import com.google.appengine.api.datastore.TransactionOptions;
+import com.google.sps.data.WordCountUpdater;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.io.IOException;
@@ -60,14 +59,15 @@ public class DataServlet extends HttpServlet {
     }
   }
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
-  private static final int TRANSACTION_RETRIES = 4;
   private DatastoreService datastore;
   private PolicyFactory sanitizer;
+  private WordCountUpdater wordCountUpdater;
   
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
     sanitizer = Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
+    wordCountUpdater = new WordCountUpdater();
   }
   
   @Override
@@ -117,40 +117,7 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("comment", comment);
     commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
-    updateWordCount(comment);
+    wordCountUpdater.updateWordCount(comment, WordCountUpdater.UpdateOp.ADD_WORDS);
     response.sendRedirect("/comments.html");
-  }
-
-  private void updateWordCount(String comment) {
-    String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
-    
-    for(String word : words){
-      Entity wordEntity;
-      Key wordKey = KeyFactory.createKey("word", word + "_word");
-      Transaction txn = datastore.beginTransaction(TransactionOptions.Builder.withXG(true));
-      try {
-        wordEntity = datastore.get(txn, wordKey);
-      } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
-        // In case word is not yet in datastore...
-        wordEntity = new Entity(wordKey);
-        wordEntity.setProperty("count", 0L);
-      }
-      wordEntity.setProperty("count", (Long) wordEntity.getProperty("count") + 1);
-      datastore.put(txn, wordEntity);
-      
-      int retry = 0;
-      while(true){
-        try {
-          txn.commit();
-          break;
-        } catch (Exception e) {
-          System.out.println("Transaction to update count did not commit for word: " + word);
-          if (retry++ == TRANSACTION_RETRIES) {
-            System.out.println("Giving up trying to commit count for word: " + word);
-            return;
-          }
-        }
-      }
-    }
   }
 }
