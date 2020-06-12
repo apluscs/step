@@ -31,8 +31,9 @@ function renderCommentsChart(){
     table.addColumn('string', 'Word');
     table.addColumn('number', 'Count');
     
+    const TAIL_LENGTH = 5;
     json.forEach((word) => {
-      table.addRow([word.key.name.substring(0, word.key.name.length - 5), word.propertyMap.count]);
+      table.addRow([word.key.name.substring(0, word.key.name.length - TAIL_LENGTH), word.propertyMap.count]);
     });
 
     const options = {
