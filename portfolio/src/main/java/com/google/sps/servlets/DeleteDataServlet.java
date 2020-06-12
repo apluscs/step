@@ -34,10 +34,12 @@ import javax.servlet.http.HttpServletResponse;
 public class DeleteDataServlet extends HttpServlet {
  
   private DatastoreService datastore;
+  private WordCountUpdater wordCountUpdater;
   
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
+    wordCountUpdater = new WordCountUpdater();
   }
   
   @Override
@@ -53,7 +55,7 @@ public class DeleteDataServlet extends HttpServlet {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         return;
       }
-      new WordCountUpdater().updateWordCount((String) comment.getProperty("comment"), '-');
+      wordCountUpdater.updateWordCount((String) comment.getProperty("comment"), WordCountUpdater.UpdateOp.REMOVE_WORDS);
       datastore.delete(commentKey);
     } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);

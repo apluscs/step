@@ -61,11 +61,13 @@ public class DataServlet extends HttpServlet {
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
   private DatastoreService datastore;
   private PolicyFactory sanitizer;
+  private WordCountUpdater wordCountUpdater;
   
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
     sanitizer = Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
+    wordCountUpdater = new WordCountUpdater();
   }
   
   @Override
@@ -115,7 +117,7 @@ public class DataServlet extends HttpServlet {
     commentEntity.setProperty("comment", comment);
     commentEntity.setProperty("time_millis", System.currentTimeMillis());    
     datastore.put(commentEntity);
-    new WordCountUpdater().updateWordCount(comment, '+');
+    wordCountUpdater.updateWordCount(comment, WordCountUpdater.UpdateOp.ADD_WORDS);
     response.sendRedirect("/comments.html");
   }
 }

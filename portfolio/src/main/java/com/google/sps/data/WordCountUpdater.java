@@ -22,19 +22,24 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.datastore.TransactionOptions;
 
-public class WordCountUpdater{
-  
+/** Class that handles the updates of word counts upon addition or deletion of comment. */
+public class WordCountUpdater {
+
   private static final int TRANSACTION_RETRIES = 4;
+  public static enum UpdateOp {
+    ADD_WORDS,
+    REMOVE_WORDS
+  };
   private DatastoreService datastore;
   
   public WordCountUpdater() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
   
-  public void updateWordCount(String comment, char op) {
+  public void updateWordCount(String comment, UpdateOp op) {
     String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
     
-    for(String word : words){
+    for (String word : words) {
       Entity wordEntity;
       Key wordKey = KeyFactory.createKey("word", word + "_word");
       Transaction txn = datastore.beginTransaction(TransactionOptions.Builder.withXG(true));
@@ -45,12 +50,12 @@ public class WordCountUpdater{
         wordEntity = new Entity(wordKey);
         wordEntity.setProperty("count", 0L);
       }
-      long newCount = (Long) wordEntity.getProperty("count") + (op == '+' ? 1 : -1);
+      long newCount = (Long) wordEntity.getProperty("count") + (op == UpdateOp.ADD_WORDS ? 1 : -1);
       wordEntity.setProperty("count", newCount);
       datastore.put(txn, wordEntity);
       
       int retry = 0;
-      while(true){
+      while (true) {
         try {
           txn.commit();
           break;
