@@ -12,28 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-const API_KEY = "AIzaSyAxYeZWtbYyULIb5s59BaENaSpZD2Qr3RA";
+const API_KEY = "AIzaSyDOLA6fsSWwR-ONnnzTR0FnjxWhXc33wJw";
 
 function loadPage() {
-  createMap();
-  renderAddressForm();
+  renderMarkers(createMap());
+  activateAddressForm();
 }
 
-function renderAddressForm() {
+function activateAddressForm() {
   // On submit, address-form will convert city, state to lat, lng and POST that to datastore
   document.getElementById('address-form').addEventListener('submit', (e) => {
+    // Need to preventDefault() so page doesn't refresh immediately.
+    e.preventDefault();
     const formData = new FormData(e.target);
     const city = formData.get("city").replace(' ', '+');
     const state = formData.get("state").replace(' ', '+');
     fetch("https://maps.googleapis.com/maps/api/geocode/json?address=" + city + "," + state + "&key=" + API_KEY)
       .then((response) => response.json())
       .then((json) => {
-        debugLog(json);
-        const lat = json.results[0].geometry.location.lat;
-        const lng = json.results[0].geometry.location.lng;
-        debugLog(lat);
-        debugLog(lng);
-        return fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'})
+        return fetch(`/markers?lat=${json.results[0].geometry.location.lat}&lng=${json.results[0].geometry.location.lng}`, 
+          {method: 'POST'});
       })
       .then((response) => {
         if (response.redirected) {
@@ -41,15 +39,23 @@ function renderAddressForm() {
         }
       })
       .catch((error) => {
-        debugLog('Error:', error);
+        alert('Error:', error);
       });
+  });
+}
+
+function renderMarkers(map) {
+  fetch('/markers').then(response => response.json()).then((markers) => {
+    markers.forEach((marker) => {
+      new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
+    });
   });
 }
 
 /** Creates a map in Aubergine style and adds it to the page. */
 function createMap() {
   const USCenterX = 38.5, USCenterY = -98;
-  const map = new google.maps.Map(
+  return new google.maps.Map(
     document.getElementById('map'), {
       center: {lat: USCenterX, lng: USCenterY}, 
       zoom: 3,
