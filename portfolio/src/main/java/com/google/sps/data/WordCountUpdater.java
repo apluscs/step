@@ -25,11 +25,12 @@ import com.google.appengine.api.datastore.TransactionOptions;
 /** Class that handles the updates of word counts upon addition or deletion of comment. */
 public class WordCountUpdater {
 
-  private static final int TRANSACTION_RETRIES = 4;
   public static enum UpdateOp {
     ADD_WORDS,
     REMOVE_WORDS
   }
+
+  private static final int TRANSACTION_RETRIES = 4;
   private DatastoreService datastore;
   
   public WordCountUpdater() {
@@ -50,8 +51,8 @@ public class WordCountUpdater {
         wordEntity = new Entity(wordKey);
         wordEntity.setProperty("count", 0L);
       }
-      long newCount = (Long) wordEntity.getProperty("count") + (op == UpdateOp.ADD_WORDS ? 1 : -1);
-      wordEntity.setProperty("count", newCount);
+
+      wordEntity.setProperty("count", getNewCount((Long) wordEntity.getProperty("count"), op));
       datastore.put(txn, wordEntity);
       
       int retry = 0;
@@ -68,5 +69,16 @@ public class WordCountUpdater {
         }
       }
     }
+  }
+  
+  public static long getNewCount(long count, UpdateOp op) {
+    switch (op) {
+      case ADD_WORDS:
+        return count + 1;
+      case REMOVE_WORDS:
+        return count - 1;
+    }
+    // This should never happen.
+    return -1;
   }
 }
