@@ -32,12 +32,8 @@ function activateAddressForm() {
     fetch("https://maps.googleapis.com/maps/api/geocode/json?address=" + city + "," + state + "&key=" + API_KEY)
       .then((response) => response.json())
       .then((json) => {
-        debugLog(json);
-        const lat = json.results[0].geometry.location.lat;
-        const lng = json.results[0].geometry.location.lng;
-        debugLog(lat);
-        debugLog(lng);
-        return fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'});
+        return fetch(`/markers?lat=${json.results[0].geometry.location.lat}&lng=${json.results[0].geometry.location.lng}`, 
+          {method: 'POST'});
       })
       .then((response) => {
         if (response.redirected) {
@@ -45,7 +41,7 @@ function activateAddressForm() {
         }
       })
       .catch((error) => {
-        debugLog('Error:', error);
+        alert('Error:', error);
       });
   });
 }
