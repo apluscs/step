@@ -18,12 +18,14 @@ let map;
 function loadPage() {
   createMap();
   renderMarkers();
-  renderAddressForm();
+  activateAddressForm();
 }
 
-function renderAddressForm() {
+function activateAddressForm() {
   // On submit, address-form will convert city, state to lat, lng and POST that to datastore
   document.getElementById('address-form').addEventListener('submit', (e) => {
+    // Need to preventDefault() so page doesn't refresh immediately.
+    e.preventDefault();
     const formData = new FormData(e.target);
     const city = formData.get("city").replace(' ', '+');
     const state = formData.get("state").replace(' ', '+');
@@ -35,7 +37,7 @@ function renderAddressForm() {
         const lng = json.results[0].geometry.location.lng;
         debugLog(lat);
         debugLog(lng);
-        return fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'})
+        return fetch("/markers?lat=" + lat + "&lng=" + lng, {method: 'POST'});
       })
       .then((response) => {
         if (response.redirected) {
@@ -45,14 +47,13 @@ function renderAddressForm() {
       .catch((error) => {
         debugLog('Error:', error);
       });
-      // e.preventDefault();
   });
 }
 
 function renderMarkers() {
   fetch('/markers').then(response => response.json()).then((markers) => {
     markers.forEach((marker) => {
-      const mark = new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
+      new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
     });
   });
 }
