@@ -13,11 +13,9 @@
 // limitations under the License.
 
 const API_KEY = "AIzaSyDOLA6fsSWwR-ONnnzTR0FnjxWhXc33wJw";
-let map;
 
 function loadPage() {
-  createMap();
-  renderMarkers();
+  renderMarkers(createMap());
   activateAddressForm();
 }
 
@@ -46,7 +44,7 @@ function activateAddressForm() {
   });
 }
 
-function renderMarkers() {
+function renderMarkers(map) {
   fetch('/markers').then(response => response.json()).then((markers) => {
     markers.forEach((marker) => {
       new google.maps.Marker({position: {lat: marker.lat, lng: marker.lng}, map: map});
@@ -57,7 +55,7 @@ function renderMarkers() {
 /** Creates a map in Aubergine style and adds it to the page. */
 function createMap() {
   const USCenterX = 38.5, USCenterY = -98;
-  map = new google.maps.Map(
+  return new google.maps.Map(
     document.getElementById('map'), {
       center: {lat: USCenterX, lng: USCenterY}, 
       zoom: 3,
