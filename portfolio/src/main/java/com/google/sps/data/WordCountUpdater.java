@@ -29,7 +29,7 @@ public class WordCountUpdater {
   public static enum UpdateOp {
     ADD_WORDS,
     REMOVE_WORDS
-  };
+  }
   private DatastoreService datastore;
   
   public WordCountUpdater() {
