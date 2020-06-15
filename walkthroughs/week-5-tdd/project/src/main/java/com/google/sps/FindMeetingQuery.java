@@ -39,20 +39,43 @@ public final class FindMeetingQuery {
     HashSet<String> requestAttendees = new HashSet<String>(request.getAttendees());
     ArrayList<Event> events =
         removeIrrelevantEvents(requestAttendees, new ArrayList<Event>(eventsCollection));
-    List<TimeRange> taken = mergeIntervals(events);
     List<TimeRange> res = new ArrayList<TimeRange>();
-    long d = request.getDuration();
-    int end = 0;
-    for (TimeRange range : taken) {
-      if (range.start() - end >= d) {
-        res.add(TimeRange.fromStartEnd(end, range.start(), false));
+    if (events.isEmpty()) {
+      addIfValid(TimeRange.fromStartEnd(0, END_OF_DAY, true), res, request.getDuration());
+      return res;
+    }
+
+    Collections.sort(events, ORDER_BY_START);
+
+    // Add first gap.
+    addIfValid(
+        TimeRange.fromStartEnd(0, events.get(0).getWhen().start(), false),
+        res,
+        request.getDuration());
+    int end = events.get(0).getWhen().end();
+    for (Event event : events) {
+      // event can be merged with current time range
+      if (event.getWhen().start() <= end) {
+        end = Math.max(end, event.getWhen().end());
+      } else {
+        // Add the time range we were tracking, start a new one from event.
+        addIfValid(
+            TimeRange.fromStartEnd(end, event.getWhen().start(), false),
+            res,
+            request.getDuration());
+        end = event.getWhen().end();
       }
-      end = range.end();
     }
-    if (END_OF_DAY + 1 - end >= d) {
-      res.add(TimeRange.fromStartEnd(end, END_OF_DAY, true));
-    }
+
+    // Add the last one we were tracking.
+    addIfValid(TimeRange.fromStartEnd(end, END_OF_DAY, true), res, request.getDuration());
     return res;
+  }
+
+  void addIfValid(TimeRange range, List<TimeRange> ranges, long duration) {
+    if (range.duration() >= duration) {
+      ranges.add(range);
+    }
   }
 
   ArrayList<Event> removeIrrelevantEvents(
@@ -62,32 +85,12 @@ public final class FindMeetingQuery {
       Set<String> eventAttendees = new HashSet<String>(event.getAttendees());
 
       // This event has at least one relevant attendee, must be recognized.
-      Set<String> intersection = new HashSet<String>(eventAttendees); // use the copy constructor
+      Set<String> intersection = new HashSet<String>(eventAttendees);
       intersection.retainAll(requestAttendees);
       if (!intersection.isEmpty()) {
         res.add(event);
       }
     }
-    return res;
-  }
-
-  List<TimeRange> mergeIntervals(ArrayList<Event> events) {
-    Collections.sort(events, ORDER_BY_START);
-    List<TimeRange> res = new ArrayList<TimeRange>();
-    if (events.isEmpty()) {
-      return res;
-    }
-    int start = events.get(0).getWhen().start(), end = events.get(0).getWhen().end();
-    for (Event event : events) {
-      if (event.getWhen().start() <= end) {
-        end = Math.max(end, event.getWhen().end());
-      } else {
-        res.add(TimeRange.fromStartEnd(start, end, false));
-        start = event.getWhen().start();
-        end = event.getWhen().end();
-      }
-    }
-    res.add(TimeRange.fromStartEnd(start, end, false));
     return res;
   }
 }
