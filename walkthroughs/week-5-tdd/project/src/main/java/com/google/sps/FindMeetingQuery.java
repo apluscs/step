@@ -45,7 +45,7 @@ public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
     HashSet<String> requestAttendees = new HashSet<String>(request.getAttendees());
     ArrayList<Event> events =
-        removeIrrelevantEvents(requestAttendees, new ArrayList<Event>(eventsCollection));
+        getRelevantEvents(requestAttendees, new ArrayList<Event>(eventsCollection));
     List<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
     if (events.isEmpty()) {
       addIfLongEnough(
@@ -101,7 +101,7 @@ public final class FindMeetingQuery {
    *
    * @param requestAttendees the set of attendees attending the meeting ("relevant" people)
    */
-  private static ArrayList<Event> removeIrrelevantEvents(
+  private static ArrayList<Event> getRelevantEvents(
       HashSet<String> relevantAttendees, ArrayList<Event> events) {
     ArrayList<Event> relevantEvents = new ArrayList<Event>();
     for (Event event : events) {
@@ -109,6 +109,7 @@ public final class FindMeetingQuery {
       for (String person : event.getAttendees()) {
         if (relevantAttendees.contains(person)) {
           isRelevant = true;
+          break;
         }
       }
       if (isRelevant) {
