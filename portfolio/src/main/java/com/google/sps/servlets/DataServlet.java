@@ -43,79 +43,88 @@ public class DataServlet extends HttpServlet {
   private static class Comment {
     private final String email, comment, date;
     private final long id;
-    public Comment(String email, String comment, String date, long id){
+
+    public Comment(String email, String comment, String date, long id) {
       this.email = email;
       this.comment = comment;
       this.date = date;
       this.id = id;
     }
   }
+
   private static class Response {
     private List<Comment> comments;
     private int lastPage;
+
     public Response(List<Comment> comments, int lastPage) {
       this.comments = comments;
       this.lastPage = lastPage;
     }
   }
+
   private static final String COMMENT_DATE_FORMAT = "MMM dd,yyyy HH:mm";
   private DatastoreService datastore;
   private PolicyFactory sanitizer;
   private WordCountUpdater wordCountUpdater;
-  
+
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
-    sanitizer = Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
+    sanitizer =
+        Sanitizers.FORMATTING.and(Sanitizers.BLOCKS).and(Sanitizers.STYLES).and(Sanitizers.LINKS);
     wordCountUpdater = new WordCountUpdater();
   }
-  
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
     int commentsPerPage = Integer.parseInt(request.getParameter("comments_per_page"));
     int pgNumber = Integer.parseInt(request.getParameter("pg_number")) - 1;
     Query commentsQuery = new Query("Comment").addSort("time_millis", SortDirection.DESCENDING);
-    List<Entity> results = 
-      datastore.prepare(commentsQuery).asList(
-        FetchOptions.Builder
-          .withLimit(commentsPerPage)
-          .offset(commentsPerPage * pgNumber));
+    List<Entity> results =
+        datastore
+            .prepare(commentsQuery)
+            .asList(
+                FetchOptions.Builder.withLimit(commentsPerPage).offset(commentsPerPage * pgNumber));
     List<Comment> comments = new ArrayList<Comment>();
-    for(Entity comment : results){
+    for (Entity comment : results) {
       comments.add(makeComment(comment));
     }
     response.setContentType("application/json;");
-    response.getWriter().println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
+    response
+        .getWriter()
+        .println(convertToJsonUsingGson(new Response(comments, getLastPage(commentsPerPage))));
   }
-  
+
   // Not very efficient, can improve with another entity to track total number of comments.
-  private int getLastPage(double commentsPerPage){
+  private int getLastPage(double commentsPerPage) {
     Query commentsQuery = new Query("Comment");
-    int entitiesCount =  datastore.prepare(commentsQuery).countEntities(FetchOptions.Builder.withDefaults());
+    int entitiesCount =
+        datastore.prepare(commentsQuery).countEntities(FetchOptions.Builder.withDefaults());
     return (int) Math.ceil(entitiesCount / commentsPerPage);
   }
-  
-  private static Comment makeComment(Entity comment){
-    SimpleDateFormat sdf = new SimpleDateFormat();    
-    Date resultDate = new Date((Long)comment.getProperty("time_millis"));
-    return new Comment( (String)comment.getProperty("email"), 
-                        (String)comment.getProperty("comment"),
-                        sdf.format(resultDate),
-                        comment.getKey().getId());
+
+  private static Comment makeComment(Entity comment) {
+    SimpleDateFormat sdf = new SimpleDateFormat();
+    Date resultDate = new Date((Long) comment.getProperty("time_millis"));
+    return new Comment(
+        (String) comment.getProperty("email"),
+        (String) comment.getProperty("comment"),
+        sdf.format(resultDate),
+        comment.getKey().getId());
   }
-  
+
   private static String convertToJsonUsingGson(Response response) {
     Gson gson = new Gson();
     return gson.toJson(response);
   }
-  
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity commentEntity = new Entity("Comment");
     String comment = sanitizer.sanitize(request.getParameter("user_comment"));
     commentEntity.setProperty("email", request.getParameter("user_email"));
     commentEntity.setProperty("comment", comment);
-    commentEntity.setProperty("time_millis", System.currentTimeMillis());    
+    commentEntity.setProperty("time_millis", System.currentTimeMillis());
     datastore.put(commentEntity);
     wordCountUpdater.updateWordCount(comment, WordCountUpdater.UpdateOp.ADD_WORDS);
     response.sendRedirect("/comments.html");

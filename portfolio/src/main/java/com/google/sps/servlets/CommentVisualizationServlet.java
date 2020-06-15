@@ -34,7 +34,7 @@ import java.util.ArrayList;
 /** Servlet that handles the visualization of comment data */
 @WebServlet("/visualize-comments")
 public class CommentVisualizationServlet extends HttpServlet {
- 
+
   private DatastoreService datastore;
 
   @Override
@@ -44,11 +44,10 @@ public class CommentVisualizationServlet extends HttpServlet {
 
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-    List<Entity> results = datastore.prepare(
-      new Query("word")
-        .addSort("count", SortDirection.DESCENDING))
-        .asList(FetchOptions.Builder.withLimit(10)
-    );
+    List<Entity> results =
+        datastore
+            .prepare(new Query("word").addSort("count", SortDirection.DESCENDING))
+            .asList(FetchOptions.Builder.withLimit(10));
     response.setContentType("application/json");
     response.getWriter().println(new Gson().toJson(results));
   }

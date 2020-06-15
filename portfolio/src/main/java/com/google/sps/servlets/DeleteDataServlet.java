@@ -32,22 +32,23 @@ import javax.servlet.http.HttpServletResponse;
 /** Servlet that handles comments data */
 @WebServlet("/delete-data")
 public class DeleteDataServlet extends HttpServlet {
- 
+
   private DatastoreService datastore;
   private WordCountUpdater wordCountUpdater;
-  
+
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
     wordCountUpdater = new WordCountUpdater();
   }
-  
+
   @Override
-  public void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
+  public void doDelete(HttpServletRequest request, HttpServletResponse response)
+      throws IOException {
     Key commentKey = KeyFactory.createKey("Comment", Long.parseLong(request.getParameter("id")));
     try {
       Entity comment = datastore.get(commentKey);
-      
+
       // Verify the deleter is the author of the comment being deleted. If not, early return.
       UserService userService = UserServiceFactory.getUserService();
       if (!userService.isUserLoggedIn()
@@ -55,7 +56,8 @@ public class DeleteDataServlet extends HttpServlet {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         return;
       }
-      wordCountUpdater.updateWordCount((String) comment.getProperty("comment"), WordCountUpdater.UpdateOp.REMOVE_WORDS);
+      wordCountUpdater.updateWordCount(
+          (String) comment.getProperty("comment"), WordCountUpdater.UpdateOp.REMOVE_WORDS);
       datastore.delete(commentKey);
     } catch (com.google.appengine.api.datastore.EntityNotFoundException e) {
       response.sendError(HttpServletResponse.SC_NOT_FOUND);

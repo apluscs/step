@@ -28,10 +28,9 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.Query;
 
-
 @WebServlet("/markers")
 public class MarkerServlet extends HttpServlet {
-  
+
   /** Represents a marker on the map. */
   private static class Marker {
 
@@ -45,17 +44,17 @@ public class MarkerServlet extends HttpServlet {
       this.content = content;
     }
   }
+
   private DatastoreService datastore;
 
   @Override
   public void init() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
-  
+
   @Override
-  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-  }
-  
+  public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {}
+
   @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
     Entity markerEntity = new Entity("Marker");
