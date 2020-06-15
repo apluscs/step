@@ -32,14 +32,14 @@ public class WordCountUpdater {
 
   private static final int TRANSACTION_RETRIES = 4;
   private DatastoreService datastore;
-  
+
   public WordCountUpdater() {
     datastore = DatastoreServiceFactory.getDatastoreService();
   }
-  
+
   public void updateWordCount(String comment, UpdateOp op) {
     String[] words = comment.replaceAll("[^a-zA-Z ]", "").toLowerCase().split("\\s+");
-    
+
     for (String word : words) {
       Entity wordEntity;
       Key wordKey = KeyFactory.createKey("word", word + "_word");
@@ -54,7 +54,7 @@ public class WordCountUpdater {
 
       wordEntity.setProperty("count", getNewCount((Long) wordEntity.getProperty("count"), op));
       datastore.put(txn, wordEntity);
-      
+
       int retry = 0;
       while (true) {
         try {
@@ -70,7 +70,7 @@ public class WordCountUpdater {
       }
     }
   }
-  
+
   public static long getNewCount(long count, UpdateOp op) {
     switch (op) {
       case ADD_WORDS:
