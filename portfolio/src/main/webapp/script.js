@@ -18,7 +18,7 @@ function loadPage() {
 
 function renderRandomGreeting(){
   fetch('/random-greeting').then((response) => {
-    debugLog("got the response")
+    debugLog('got the response')
     return response.text();
   }).then((greeting) => {
     debugLog('Adding greeting to dom: ' + greeting);

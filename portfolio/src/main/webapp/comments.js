@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-google.charts.load("current", {packages:["corechart"]});
+google.charts.load('current', {packages:['corechart']});
 google.charts.setOnLoadCallback(renderCommentsChart);
 
 function loadCommentsPage(pgNumber = 1){
   renderCommentsChart();
   const commentsPerPage = parseInt(document.getElementById('comments-per-page-select').value);
-  debugLog("commentsPerPage=" + commentsPerPage);
-  fetch("/data" + "?comments_per_page=" + commentsPerPage+ "&pg_number=" + pgNumber).then(response => response.json()).then((response) => {
+  debugLog('commentsPerPage=' + commentsPerPage);
+  fetch('/data' + '?comments_per_page=' + commentsPerPage+ '&pg_number=' + pgNumber).then(response => response.json()).then((response) => {
     renderComments(response.comments);
     renderPagination(response.lastPage, pgNumber);
   });
@@ -66,14 +66,14 @@ function renderPagination(lastPage, currPage){
   if(currPage >= 3){
     renderPaginationRange(paginationList, 1, 1);
     if(currPage > 3){
-      paginationList.appendChild(createPageElement(".."));
+      paginationList.appendChild(createPageElement('..'));
     }
   }
   renderPaginationRange(paginationList, Math.max(1, currPage - 1), Math.min(lastPage, currPage + 1), currPage);
   
   if(currPage <= lastPage - 2){
     if(currPage < lastPage - 2){
-      paginationList.appendChild(createPageElement(".."));
+      paginationList.appendChild(createPageElement('..'));
     }
     renderPaginationRange(paginationList, lastPage, lastPage);
   }
@@ -87,19 +87,19 @@ function renderPaginationRange(paginationList, start, end, currPage = -1){
 }
 
 function createPageElement(page, currPage = -1){    
-  const listElement = document.createElement("li"); 
-  addClass(listElement, "page-item")
+  const listElement = document.createElement('li'); 
+  addClass(listElement, 'page-item')
   if(page === currPage){
-    addClass(listElement, "active");
+    addClass(listElement, 'active');
   }
   
-  const button = document.createElement("button"); 
+  const button = document.createElement('button'); 
   button.innerHTML = page;
-  addClass(button, "btn");
-  addClass(button, "btn-default");
-  addClass(button, "page-link");
-  button.addEventListener("click", function(){
-    debugLog("button clicked for page " + page)
+  addClass(button, 'btn');
+  addClass(button, 'btn-default');
+  addClass(button, 'page-link');
+  button.addEventListener('click', function(){
+    debugLog('button clicked for page ' + page)
     loadCommentsPage(page)
   });
   
@@ -109,7 +109,7 @@ function createPageElement(page, currPage = -1){
 
 function renderComments(comments){
   fetch('/authenticate').then((response) => response.json()).then((response) => {
-    userEmail = "";
+    userEmail = '';
     debugLog(response.isUserLoggedIn);
     if (response.isUserLoggedIn){
       userEmail = response.userEmail;
@@ -119,7 +119,7 @@ function renderComments(comments){
     comments.forEach((comment) => {
       commentsList.appendChild(createCommentElement(comment, userEmail));
     });
-    document.getElementById("comment-template").setAttribute("hidden", "true");
+    document.getElementById('comment-template').setAttribute('hidden', 'true');
   });
 }
 
@@ -134,27 +134,27 @@ function deleteComment(comment){
     }
   })
   .catch((error) => {
-    alert("Error when deleting comment: " + error);
+    alert('Error when deleting comment: ' + error);
   });
 }
 
 function createCommentElement(comment, userEmail) {
-  const template = document.getElementById("comment-template");
+  const template = document.getElementById('comment-template');
   const card = template.cloneNode(true);
-  card.setAttribute("id", "");
-  card.querySelector("#comment-title").innerHTML = "From: " + comment.email;
-  card.querySelector("#comment-text").innerHTML = comment.comment;
-  card.querySelector("#comment-date").innerHTML = comment.date;
+  card.setAttribute('id', '');
+  card.querySelector('#comment-title').innerHTML = 'From: ' + comment.email;
+  card.querySelector('#comment-text').innerHTML = comment.comment;
+  card.querySelector('#comment-date').innerHTML = comment.date;
 
   // Give the user the option to delete comments they made.
   if (comment.email === userEmail) {
-    const deleteLink = card.querySelector("#comment-delete-link");
-    deleteLink.removeAttribute("hidden");
-    deleteLink.addEventListener("click", () => {
+    const deleteLink = card.querySelector('#comment-delete-link');
+    deleteLink.removeAttribute('hidden');
+    deleteLink.addEventListener('click', () => {
       deleteComment(comment);
     });
   }
-  document.getElementById("comments-container").appendChild(card);
+  document.getElementById('comments-container').appendChild(card);
   
   return card;
 }

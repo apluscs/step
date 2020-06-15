@@ -57,6 +57,7 @@
           <deploy.version>1</deploy.version>
         </configuration>
       </plugin>
+      
       <plugin>
         <groupId>com.theoryinpractise</groupId>
         <artifactId>googleformatter-maven-plugin</artifactId>
