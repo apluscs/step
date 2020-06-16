@@ -43,9 +43,23 @@ public final class FindMeetingQuery {
    *     long it needs to be
    */
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
+    Collection<TimeRange> withOptional =getMeetingTimes(eventsCollection,request,true);
+    return withOptional.isEmpty() ? getMeetingTimes(eventsCollection,request,false) : withOptional;
+    
+  }
+
+  private Collection<TimeRange> getMeetingTimes(Collection<Event> eventsCollection, MeetingRequest request, boolean includeOptional){
+    HashSet<String> attendees = new HashSet<String>(request.getAttendees());
+    if(includeOptional){
+      attendees.addAll(request.getOptionalAttendees());
+    }
+    for(String p:optional){
+      System.out.println(p);
+    }
+    System.out.println();
     ArrayList<Event> events =
         getRelevantEvents(
-            new HashSet<String>(request.getAttendees()), new ArrayList<Event>(eventsCollection));
+           attendees , new ArrayList<Event>(eventsCollection));
     List<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
 
     // Need to check this so we don't access out of bounds when we add first gap.
@@ -80,9 +94,10 @@ public final class FindMeetingQuery {
     addIfLongEnough(
         TimeRange.fromStartEnd(end, END_OF_DAY, true), possibleMeetingTimes, request.getDuration());
     return possibleMeetingTimes;
+    }
   }
-
-  /**
+  
+    /**
    * Adds range to ranges if it is long enough to fit in a meeting.
    *
    * @param range the range being considered
@@ -90,10 +105,9 @@ public final class FindMeetingQuery {
    * @param meetingDuration the duration of meeting to be scheduled
    */
   private static void addIfLongEnough(
-      TimeRange range, List<TimeRange> ranges, long meetingDuration) {
-    if (range.duration() >= meetingDuration) {
-      ranges.add(range);
-    }
+    TimeRange range, List<TimeRange> ranges, long meetingDuration) {
+  if (range.duration() >= meetingDuration) {
+    ranges.add(range);
   }
 
   /**
