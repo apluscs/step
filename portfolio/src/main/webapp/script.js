@@ -16,7 +16,7 @@ function loadPage() {
   renderRandomGreeting();
 }
 
-function renderRandomGreeting(){
+function renderRandomGreeting() {
   fetch('/random-greeting').then((response) => {
     debugLog('got the response')
     return response.text();

@@ -23,11 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/** Class that lists possible meeting times based on meeting information it takes in. */
+/** Lists possible meeting times based on meeting information it takes in. */
 public final class FindMeetingQuery {
   private static final int END_OF_DAY = TimeRange.getTimeInMinutes(23, 59);
 
-  private static final Comparator<Event> ORDER_BY_START =
+  private static final Comparator<Event> ORDER_BY_START_ASC =
       new Comparator<Event>() {
         @Override
         public int compare(Event a, Event b) {
@@ -43,16 +43,18 @@ public final class FindMeetingQuery {
    *     long it needs to be
    */
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
-    HashSet<String> requestAttendees = new HashSet<String>(request.getAttendees());
     ArrayList<Event> events =
-        getRelevantEvents(requestAttendees, new ArrayList<Event>(eventsCollection));
+        getRelevantEvents(
+            new HashSet<String>(request.getAttendees()), new ArrayList<Event>(eventsCollection));
     List<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
+
+    // Need to check this so we don't access out of bounds when we add first gap.
     if (events.isEmpty()) {
       addIfLongEnough(
           TimeRange.fromStartEnd(0, END_OF_DAY, true), possibleMeetingTimes, request.getDuration());
       return possibleMeetingTimes;
     }
-    Collections.sort(events, ORDER_BY_START);
+    Collections.sort(events, ORDER_BY_START_ASC);
 
     // Add first gap.
     addIfLongEnough(

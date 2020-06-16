@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-function renderAuthentication(){
+function renderAuthentication() {
   fetch('/authenticate').then((response) => response.json()).then((response) => {
     debugLog(response);
     const navbarList = document.getElementById('navbar-list');
-    if(response.isUserLoggedIn){
+    if (response.isUserLoggedIn) {
       navbarList.appendChild(createAuthenticatedStatusElement(response.logoutUrl, 'Logout'));
     } else {
       navbarList.appendChild(createAuthenticatedStatusElement(response.loginUrl, 'Login'));
