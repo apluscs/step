@@ -47,9 +47,11 @@ public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
     Collection<TimeRange> withOptionalAttendees = getMeetingTimes(eventsCollection, request, true);
 
-    return withOptionalAttendees.isEmpty()
-        ? getMeetingTimes(eventsCollection, request, false)
-        : withOptionalAttendees;
+    // Special case: if no mandatory attendees and optional attendees' schedules cannot fit in a
+    // meeting, no meeting times are possible.
+    return !withOptionalAttendees.isEmpty() || request.getAttendees().isEmpty()
+        ? withOptionalAttendees
+        : getMeetingTimes(eventsCollection, request, false);
   }
 
   private Collection<TimeRange> getMeetingTimes(

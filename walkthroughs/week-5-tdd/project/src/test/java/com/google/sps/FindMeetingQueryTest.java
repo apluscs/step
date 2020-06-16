@@ -462,7 +462,7 @@ public final class FindMeetingQueryTest {
 
   @Test
   public void onlyOptionalAndImpossible() {
-    // Two optional attendees with no gaps in their schedules. We should see those no gaps returned.
+    // Two optional attendees with no gaps in their schedules. We should see no gaps returned.
     //
     // Events  : |--A--|        |---A--------|
     //                 |---B----|
@@ -489,7 +489,7 @@ public final class FindMeetingQueryTest {
     request.addOptionalAttendee(PERSON_B);
 
     Collection<TimeRange> actual = query.query(events, request);
-    Collection<TimeRange> expected = Arrays.asList(TimeRange.WHOLE_DAY);
+    Collection<TimeRange> expected = Arrays.asList();
     Assert.assertEquals(expected, actual);
   }
 }
