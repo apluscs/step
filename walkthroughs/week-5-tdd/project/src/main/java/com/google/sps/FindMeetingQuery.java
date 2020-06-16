@@ -36,9 +36,9 @@ public final class FindMeetingQuery {
       };
 
   /**
-   * Returns a list of time periods in which the meeting, specified by request, could happen. If
-   * there are no meeting times for mandatory and optional attendees, return the time slots with
-   * just mandatory attendees.
+   * Returns a list of time periods in which the meeting, specified by request, could happen. If one
+   * or more time slots exists so that both mandatory and optional attendees can attend, it returns
+   * those time slots. Otherwise, it returns the time slots that fit just the mandatory attendees.
    *
    * @param eventsCollection the events we know about
    * @param request information about the meeting, including attendees, optional attendees, and how
