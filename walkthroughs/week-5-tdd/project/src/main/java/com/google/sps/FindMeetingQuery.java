@@ -51,53 +51,90 @@ public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
     ArrayList<TimeRange> mandatoryAttendeesMeetingTimes =
         getMeetingTimes(eventsCollection, request);
+    System.out.println("window: ");
+    for (TimeRange t : mandatoryAttendeesMeetingTimes) {
+      System.out.println(t.toString());
+    }
     HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes =
         getFreeTimes(eventsCollection, request);
-    return optimalMeetingTimes(mandatoryAttendeesMeetingTimes, optionalAttendeesFreeTimes);
-    // System.out.println();
-    // return mandatoryAttendeesMeetingTimes;
-  }
-  
-  private Collection<TimeRange> optimalMeetingTimes(ArrayList<TimeRange> windows, HashMap<String, ArrayList<TimeRange>> optional){
-    ArrayList<TimeRange> res = new ArrayList<TimeRange>();
-    TreeMap<Integer, Integer> sweep = new TreeMap<Integer, Integer>();
-    for(Map.Entry e : optional.entrySet()){
-      ArrayList<TimeRange> value = e.getValue();
-      for(TimeRange t:value){
-        sweep.put(t.start(),sweep.getOrDefault(t.start(),0)+1);
-        sweep.put(t.end(),sweep.getOrDefault(t.end(),0)-1);
-      }
-    }
-    int sum=0,i=0;
-    for(Map.Entry e : sweep.entrySet()){
-      sum+=e.getValue();
-      
-    }
-    return res;
+    return optimalMeetingTimes(
+        mandatoryAttendeesMeetingTimes, optionalAttendeesFreeTimes, request.getDuration());
   }
 
+  private Collection<TimeRange> optimalMeetingTimes(
+      ArrayList<TimeRange> windows, HashMap<String, ArrayList<TimeRange>> optional, long duration) {
+    if (optional.isEmpty()) return windows;
+    ArrayList<TimeRange> res = new ArrayList<TimeRange>();
+    TreeMap<Integer, Integer> sweep = new TreeMap<Integer, Integer>();
+    for (Map.Entry e : optional.entrySet()) {
+      ArrayList<TimeRange> value = (ArrayList<TimeRange>) e.getValue();
+      System.out.println(e.getKey() + " optionals:");
+      for (TimeRange t : value) {
+        sweep.put(t.start(), sweep.getOrDefault(t.start(), 0) + 1);
+        sweep.put(t.end(), sweep.getOrDefault(t.end(), 0) - 1);
+        System.out.println(t.toString());
+      }
+    }
+    System.out.println();
+    int sum = 0, prev = 0, j = 0, best = 0; // j=
+    for (Map.Entry e : sweep.entrySet()) {
+      if (prev >= windows.get(j).end()) j++; // need to move onto next window
+      if (j >= windows.size()) break;
+      TimeRange next =
+          TimeRange.fromStartEnd(
+              Math.max(windows.get(j).start(), prev),
+              Math.min(windows.get(j).end(), (Integer) e.getKey()),
+              false);
+      if (next.duration() >= duration) {
+        if (sum > best) {
+          best = sum;
+          res.clear();
+          System.out.println("cleared");
+        }
+        if (sum == best) res.add(next);
+        System.out.println("adding " + next.toString());
+      }
+      sum += (Integer) e.getValue(); // for next window
+      prev = (Integer) e.getKey();
+    }
+    if (j >= windows.size()) {
+      return res.isEmpty() ? windows : res;
+    }
+    TimeRange next =
+        TimeRange.fromStartEnd(
+            Math.max(windows.get(j).start(), prev),
+            Math.min(windows.get(j).end(), TimeRange.END_OF_DAY),
+            true);
+    if (next.duration() >= duration) {
+      if (sum > best) {
+        best = sum;
+        res.clear();
+      }
+      if (sum == best) res.add(next);
+    }
+    return res.isEmpty() ? windows : res;
+  }
+
+  // gets free times for optional attendees
   private HashMap<String, ArrayList<TimeRange>> getFreeTimes(
       Collection<Event> eventsCollection, MeetingRequest request) {
     HashMap<String, ArrayList<TimeRange>> busy = new HashMap<String, ArrayList<TimeRange>>();
     HashSet<String> attendees = new HashSet<String>(request.getOptionalAttendees());
     for (Event event : eventsCollection) {
-      for (String attendee : event.getAttendees()) {
+      for (String attendee : attendees) {
+        if (!event.getAttendees().contains(attendee)) { // attendee is not going to this event
+          continue;
+        }
         busy.putIfAbsent(attendee, new ArrayList<TimeRange>());
         busy.get(attendee).add(event.getWhen());
       }
     }
     for (Map.Entry e : busy.entrySet()) {
       String key = (String) e.getKey();
-
       ArrayList<TimeRange> value = getComplement((ArrayList<TimeRange>) e.getValue());
-      System.out.print(key + " : ");
-      for (TimeRange t : value) {
-        System.out.print(t.toString() + " ");
-      }
-      System.out.println();
       e.setValue(value);
     }
-
+    busy.entrySet().removeIf(e -> e.getValue().isEmpty());
     return busy;
   }
 
@@ -114,6 +151,7 @@ public final class FindMeetingQuery {
     if (end <= END_OF_DAY) {
       res.add(TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true));
     }
+
     return res;
   }
 
@@ -121,7 +159,7 @@ public final class FindMeetingQuery {
       Collection<Event> eventsCollection, MeetingRequest request) {
     HashSet<String> attendees = new HashSet<String>(request.getAttendees());
     ArrayList<Event> events = getRelevantEvents(attendees, new ArrayList<Event>(eventsCollection));
-    List<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
+    ArrayList<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
 
     // Need to check this so we don't access out of bounds when we add first gap.
     if (events.isEmpty()) {
