@@ -36,16 +36,35 @@ public final class FindMeetingQuery {
       };
 
   /**
-   * Returns a list of time periods in which the meeting, specified by request, could happen.
+   * Returns a list of time periods in which the meeting, specified by request, could happen. If one
+   * or more time slots exists so that both mandatory and optional attendees can attend, it returns
+   * those time slots. Otherwise, it returns the time slots that fit just the mandatory attendees.
    *
    * @param eventsCollection the events we know about
    * @param request information about the meeting, including attendees, optional attendees, and how
    *     long it needs to be
    */
-  public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
-    ArrayList<Event> events =
-        getRelevantEvents(
-            new HashSet<String>(request.getAttendees()), new ArrayList<Event>(eventsCollection));
+  public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
+    Collection<TimeRange> withOptionalAttendees =
+        getMeetingTimes(events, request, /*includeOptionalAttendees=*/true);
+
+    // Special case: if no mandatory attendees and optional attendees' schedules cannot fit in a
+    // meeting, no meeting times are possible.
+    if(!withOptionalAttendees.isEmpty() || request.getAttendees().isEmpty()){
+      return withOptionalAttendees;
+    }
+    return getMeetingTimes(events, request, /*includeOptionalAttendees=*/false);
+  }
+
+  private Collection<TimeRange> getMeetingTimes(
+      Collection<Event> eventsCollection,
+      MeetingRequest request,
+      boolean includeOptionalAttendees) {
+    HashSet<String> attendees = new HashSet<String>(request.getAttendees());
+    if (includeOptionalAttendees) {
+      attendees.addAll(request.getOptionalAttendees());
+    }
+    ArrayList<Event> events = getRelevantEvents(attendees, new ArrayList<Event>(eventsCollection));
     List<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
 
     // Need to check this so we don't access out of bounds when we add first gap.
