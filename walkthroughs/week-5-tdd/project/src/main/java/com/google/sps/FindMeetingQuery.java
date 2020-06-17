@@ -53,62 +53,104 @@ public final class FindMeetingQuery {
         getMeetingsSatisfyingAllAttendees(eventsCollection, request);
     HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes =
         getFreeTimes(eventsCollection, new HashSet<String>(request.getOptionalAttendees()));
-    return optimalMeetingTimes(
+    return getOptimalMeetingTimes(
         mandatoryAttendeesMeetingTimes, optionalAttendeesFreeTimes, request.getDuration());
   }
 
-  private Collection<TimeRange> optimalMeetingTimes(
-      ArrayList<TimeRange> windows, HashMap<String, ArrayList<TimeRange>> optional, long duration) {
-    if (optional.isEmpty()) return windows;
+  /**
+   * Returns all meeting times that allow the most optional attendees to attend. These times must
+   * also fall in a good window and must be at least minTime long. Utilizes a sweep-line algorithm.
+   *
+   * @param goodWindows all times in which a meeting can be scheduled
+   * @param optional all optional attendees to be considered
+   * @param minTime the minimum time a meeting must last for
+   */
+  private Collection<TimeRange> getOptimalMeetingTimes(
+      ArrayList<TimeRange> goodWindows,
+      HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes,
+      long minTime) {
+
+    // If there are no optional attendees free times, return all good windows.
+    if (optionalAttendeesFreeTimes.isEmpty()) return goodWindows;
+
     ArrayList<TimeRange> res = new ArrayList<TimeRange>();
-    TreeMap<Integer, Integer> sweep = new TreeMap<Integer, Integer>();
-    for (Map.Entry e : optional.entrySet()) {
-      ArrayList<TimeRange> value = (ArrayList<TimeRange>) e.getValue();
-      System.out.println(e.getKey() + " optionals:");
-      for (TimeRange t : value) {
-        sweep.put(t.start(), sweep.getOrDefault(t.start(), 0) + 1);
-        sweep.put(t.end(), sweep.getOrDefault(t.end(), 0) - 1);
-        System.out.println(t.toString());
-      }
-    }
-    System.out.println();
-    int sum = 0, prev = 0, j = 0, best = 0; // j=
+    TreeMap<Integer, Integer> sweep = getChanges(optionalAttendeesFreeTimes);
+
+    int sum = 0, prev = 0, j = 0, best = 0;
     for (Map.Entry e : sweep.entrySet()) {
-      if (prev >= windows.get(j).end()) j++; // need to move onto next window
-      if (j >= windows.size()) break;
-      TimeRange next =
-          TimeRange.fromStartEnd(
-              Math.max(windows.get(j).start(), prev),
-              Math.min(windows.get(j).end(), (Integer) e.getKey()),
-              false);
-      if (next.duration() >= duration) {
-        if (sum > best) {
-          best = sum;
-          res.clear();
-          System.out.println("cleared");
-        }
-        if (sum == best) res.add(next);
-        System.out.println("adding " + next.toString());
-      }
+      if (prev >= goodWindows.get(j).end()) j++; // need to move onto next window
+      if (j >= goodWindows.size()) break;
+
+      best =
+          updateOptimalTimes(
+              TimeRange.fromStartEnd(
+                  Math.max(goodWindows.get(j).start(), prev),
+                  Math.min(goodWindows.get(j).end(), (Integer) e.getKey()),
+                  false),
+              best,
+              sum,
+              res,
+              minTime);
       sum += (Integer) e.getValue(); // for next window
       prev = (Integer) e.getKey();
     }
-    if (j >= windows.size()) {
-      return res.isEmpty() ? windows : res;
+    if (j >= goodWindows.size()) {
+      return res.isEmpty() ? goodWindows : res;
     }
-    TimeRange next =
-        TimeRange.fromStartEnd(
-            Math.max(windows.get(j).start(), prev),
-            Math.min(windows.get(j).end(), TimeRange.END_OF_DAY),
-            true);
-    if (next.duration() >= duration) {
-      if (sum > best) {
-        best = sum;
-        res.clear();
+    best =
+        updateOptimalTimes(
+            TimeRange.fromStartEnd(
+                Math.max(goodWindows.get(j).start(), prev),
+                Math.min(goodWindows.get(j).end(), TimeRange.END_OF_DAY),
+                true),
+            best,
+            sum,
+            res,
+            minTime);
+
+    return res.isEmpty() ? goodWindows : res;
+  }
+
+  /**
+   * Updates optimalMeetingTimes based on current time range's attendance.
+   *
+   * @param optionalAttendeesFreeTimes all attendees and their free times
+   */
+  private int updateOptimalTimes(
+      TimeRange time,
+      int bestAttendance,
+      int currAttendance,
+      ArrayList<TimeRange> optimalMeetingTimes,
+      long minTime) {
+    if (time.duration() >= minTime) {
+      // Clear out all former optimal meeting times. They aren't the most optimal anymore.
+      if (currAttendance > bestAttendance) {
+        bestAttendance = currAttendance;
+        optimalMeetingTimes.clear();
       }
-      if (sum == best) res.add(next);
+      if (currAttendance == bestAttendance) {
+        optimalMeetingTimes.add(time);
+      }
     }
-    return res.isEmpty() ? windows : res;
+    return bestAttendance;
+  }
+
+  /**
+   * Returns a change log of how many attendees are available in at a certain time.
+   *
+   * @param optionalAttendeesFreeTimes all attendees and their free times
+   */
+  private TreeMap<Integer, Integer> getChanges(
+      HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes) {
+    TreeMap<Integer, Integer> changes = new TreeMap<Integer, Integer>();
+    for (Map.Entry e : optionalAttendeesFreeTimes.entrySet()) {
+      ArrayList<TimeRange> freeTimes = (ArrayList<TimeRange>) e.getValue();
+      for (TimeRange time : freeTimes) {
+        changes.put(time.start(), changes.getOrDefault(time.start(), 0) + 1);
+        changes.put(time.end(), changes.getOrDefault(time.end(), 0) - 1);
+      }
+    }
+    return changes;
   }
 
   /**
@@ -134,7 +176,7 @@ public final class FindMeetingQuery {
     for (Map.Entry e : times.entrySet()) {
       ArrayList<TimeRange> value = getComplement((ArrayList<TimeRange>) e.getValue());
 
-      // To save space, we change the range of times to its complement instead of creating a new
+      // To save space, we change the range of times to its complement instead of adding to a new
       // HashMap.
       e.setValue(value);
     }
