@@ -50,13 +50,9 @@ public final class FindMeetingQuery {
    */
   public Collection<TimeRange> query(Collection<Event> eventsCollection, MeetingRequest request) {
     ArrayList<TimeRange> mandatoryAttendeesMeetingTimes =
-        getMeetingTimes(eventsCollection, request);
-    System.out.println("window: ");
-    for (TimeRange t : mandatoryAttendeesMeetingTimes) {
-      System.out.println(t.toString());
-    }
+        getMeetingsSatisfyingAllAttendees(eventsCollection, request);
     HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes =
-        getFreeTimes(eventsCollection, request);
+        getFreeTimes(eventsCollection, new HashSet<String>(request.getOptionalAttendees()));
     return optimalMeetingTimes(
         mandatoryAttendeesMeetingTimes, optionalAttendeesFreeTimes, request.getDuration());
   }
@@ -115,47 +111,63 @@ public final class FindMeetingQuery {
     return res.isEmpty() ? windows : res;
   }
 
-  // gets free times for optional attendees
+  /**
+   * Returns a mapping of each attendee to the time intervals they are free in a day.
+   *
+   * @param eventsCollection all events to be considered.
+   * @param attendees all attendees to be considered
+   */
   private HashMap<String, ArrayList<TimeRange>> getFreeTimes(
-      Collection<Event> eventsCollection, MeetingRequest request) {
-    HashMap<String, ArrayList<TimeRange>> busy = new HashMap<String, ArrayList<TimeRange>>();
-    HashSet<String> attendees = new HashSet<String>(request.getOptionalAttendees());
+      Collection<Event> eventsCollection, HashSet<String> attendees) {
+    HashMap<String, ArrayList<TimeRange>> times = new HashMap<String, ArrayList<TimeRange>>();
     for (Event event : eventsCollection) {
       for (String attendee : attendees) {
-        if (!event.getAttendees().contains(attendee)) { // attendee is not going to this event
+
+        // attendee is not going to this event
+        if (!event.getAttendees().contains(attendee)) {
           continue;
         }
-        busy.putIfAbsent(attendee, new ArrayList<TimeRange>());
-        busy.get(attendee).add(event.getWhen());
+        times.putIfAbsent(attendee, new ArrayList<TimeRange>());
+        times.get(attendee).add(event.getWhen());
       }
     }
-    for (Map.Entry e : busy.entrySet()) {
-      String key = (String) e.getKey();
+    for (Map.Entry e : times.entrySet()) {
       ArrayList<TimeRange> value = getComplement((ArrayList<TimeRange>) e.getValue());
+
+      // To save space, we change the range of times to its complement instead of creating a new
+      // HashMap.
       e.setValue(value);
     }
-    busy.entrySet().removeIf(e -> e.getValue().isEmpty());
-    return busy;
+
+    // Remove attendees that have no free time (if they were busy the whole day).
+    times.entrySet().removeIf(e -> e.getValue().isEmpty());
+    return times;
   }
 
+  /**
+   * Returns all times that don't overlap with given times in a day.
+   *
+   * @param times non-overlapping intervals of times in a 24-hour day
+   */
   private ArrayList<TimeRange> getComplement(ArrayList<TimeRange> times) {
     Collections.sort(times, TimeRange.ORDER_BY_START);
     ArrayList<TimeRange> res = new ArrayList<TimeRange>();
+
+    // end tracks the end of the last time period, and thus the beginning of the next one.
     int end = TimeRange.START_OF_DAY;
-    for (TimeRange t : times) {
-      if (end < t.start()) {
-        res.add(TimeRange.fromStartEnd(end, t.start(), false));
+    for (TimeRange time : times) {
+      if (end < time.start()) {
+        res.add(TimeRange.fromStartEnd(end, time.start(), false));
       }
-      end = t.end();
+      end = time.end();
     }
     if (end <= END_OF_DAY) {
       res.add(TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true));
     }
-
     return res;
   }
 
-  private ArrayList<TimeRange> getMeetingTimes(
+  private ArrayList<TimeRange> getMeetingsSatisfyingAllAttendees(
       Collection<Event> eventsCollection, MeetingRequest request) {
     HashSet<String> attendees = new HashSet<String>(request.getAttendees());
     ArrayList<Event> events = getRelevantEvents(attendees, new ArrayList<Event>(eventsCollection));
