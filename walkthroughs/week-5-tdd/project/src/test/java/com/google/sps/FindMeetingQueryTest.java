@@ -470,7 +470,7 @@ public final class FindMeetingQueryTest {
     //
     // Events  : |--A--|        |---A--------|
     //                 |---B----|
-    // Day     : |---------------------------|
+    // Day     : |----||-------||------------|
     // Options :
 
     Collection<Event> events =
@@ -586,6 +586,113 @@ public final class FindMeetingQueryTest {
         Arrays.asList(TimeRange.fromStartEnd(TIME_1230PM, TIME_0600PM, false));
     Assert.assertEquals(expected, actual);
   }
-}
 
-// TODO: add more tests for start/ end of days, overlapping, nested, double booked
+  @Test
+  public void optimalIsSplitDay() {
+    // Two optional attendees A, B. One mandatory attendee C.
+    // Only the immeidate start and immediate end should be returned.
+    //
+    // Events  :                |---C---|
+    //           |-------A------|       |-B--|
+    //
+    // Day     : |---------------------------|
+    // Options : |--------------|       |----|
+
+    Collection<Event> events =
+        Arrays.asList(
+            new Event(
+                "Event 1",
+                TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false),
+                Arrays.asList(PERSON_A)),
+            new Event(
+                "Event 2",
+                TimeRange.fromStartEnd(TIME_1230PM, TimeRange.END_OF_DAY, true),
+                Arrays.asList(PERSON_B)),
+            new Event(
+                "Event 3",
+                TimeRange.fromStartEnd(TIME_0900AM, TIME_1230PM, false),
+                Arrays.asList(PERSON_C)));
+
+    MeetingRequest request = new MeetingRequest(Arrays.asList(PERSON_C), DURATION_30_MINUTES);
+    request.addOptionalAttendee(PERSON_B);
+    request.addOptionalAttendee(PERSON_A);
+
+    Collection<TimeRange> actual = query.query(events, request);
+    Collection<TimeRange> expected =
+        Arrays.asList(
+            TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false),
+            TimeRange.fromStartEnd(TIME_1230PM, TimeRange.END_OF_DAY, true));
+    Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void optimalNestedEvents() {
+    // Two optional attendees A, B. One mandatory attendee C.
+    // B's event lies within A. Only the end of day should be returned.
+    //
+    // Events  :    |-B--|      |---C---|
+    //           |-------A------|
+    //
+    // Day     : |---------------------------|
+    // Options :                        |----|
+
+    Collection<Event> events =
+        Arrays.asList(
+            new Event(
+                "Event 1",
+                TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false),
+                Arrays.asList(PERSON_A)),
+            new Event(
+                "Event 2",
+                TimeRange.fromStartEnd(TIME_0800AM, TIME_0830AM, false),
+                Arrays.asList(PERSON_B)),
+            new Event(
+                "Event 3",
+                TimeRange.fromStartEnd(TIME_0900AM, TIME_1230PM, false),
+                Arrays.asList(PERSON_C)));
+
+    MeetingRequest request = new MeetingRequest(Arrays.asList(PERSON_C), DURATION_30_MINUTES);
+    request.addOptionalAttendee(PERSON_B);
+    request.addOptionalAttendee(PERSON_A);
+
+    Collection<TimeRange> actual = query.query(events, request);
+    Collection<TimeRange> expected =
+        Arrays.asList(TimeRange.fromStartEnd(TIME_1230PM, TimeRange.END_OF_DAY, true));
+    Assert.assertEquals(expected, actual);
+  }
+
+  @Test
+  public void optimalDoubleBooked() {
+    // One optional attendees A. One mandatory attendee C.
+    // A's events should be counted as one. The first half of the day should be returned.
+    //
+    // Events  : |--A--|        |---C--------|
+    //           |-------A------|
+    //
+    // Day     : |---------------------------|
+    // Options : |--------------|
+
+    Collection<Event> events =
+        Arrays.asList(
+            new Event(
+                "Event 1",
+                TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false),
+                Arrays.asList(PERSON_A)),
+            new Event(
+                "Event 2",
+                TimeRange.fromStartEnd(TIME_0800AM, TIME_0830AM, false),
+                Arrays.asList(PERSON_A)),
+            new Event(
+                "Event 3",
+                TimeRange.fromStartEnd(TIME_0900AM, TIME_1230PM, false),
+                Arrays.asList(PERSON_C)));
+
+    MeetingRequest request = new MeetingRequest(Arrays.asList(PERSON_C), DURATION_30_MINUTES);
+    request.addOptionalAttendee(PERSON_A);
+
+    Collection<TimeRange> actual = query.query(events, request);
+    Collection<TimeRange> expected =
+        Arrays.asList(TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_1230PM, false));
+    Assert.assertEquals(expected, actual);
+  }
+}
