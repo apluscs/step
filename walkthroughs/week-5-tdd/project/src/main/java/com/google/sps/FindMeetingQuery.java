@@ -82,8 +82,8 @@ public final class FindMeetingQuery {
       // Need to back up j in case we missed a good window.
       j = Math.max(0, j - 1);
 
-      // Compares time range from changeLog[i-1] to changeLog[i]. If the current good window
-      // overlaps overlaps with this time range, we can proceed.
+      // Compares time range from changeLog[i-1] to changeLog[i] to all good windows
+      // that overlap with this time range.
       while (j < goodWindows.size()
           && goodWindows.get(j).start() < (Integer) changeLog.get(i).getKey()) {
         bestAttendance =
