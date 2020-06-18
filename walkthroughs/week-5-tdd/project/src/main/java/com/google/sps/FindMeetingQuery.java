@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,10 +50,12 @@ public final class FindMeetingQuery {
   public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
     ArrayList<TimeRange> mandatoryAttendeesMeetingTimes =
         getMandatoryAttendeesMeetingTimes(events, request);
-    HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes =
-        getOptionalAttendeesFreeTimes(events, new HashSet<String>(request.getOptionalAttendees()));
+    if (mandatoryAttendeesMeetingTimes.isEmpty()) return mandatoryAttendeesMeetingTimes;
+
     return getOptimalMeetingTimes(
-        mandatoryAttendeesMeetingTimes, optionalAttendeesFreeTimes, request.getDuration());
+        mandatoryAttendeesMeetingTimes,
+        getChanges(events, new HashSet<String>(request.getOptionalAttendees())),
+        request.getDuration());
   }
 
   /**
@@ -65,66 +68,80 @@ public final class FindMeetingQuery {
    * @param minTime the minimum time a meeting must last for
    */
   private Collection<TimeRange> getOptimalMeetingTimes(
-      ArrayList<TimeRange> goodWindows,
-      HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes,
-      long minTime) {
-
+      ArrayList<TimeRange> goodWindows, TreeMap<Integer, Integer> changeLog, long minTime) {
+    System.out.println("changelog size=" + changeLog.size());
     // If there are no optional attendees free times, return all good windows.
-    if (optionalAttendeesFreeTimes.isEmpty()) {
+    if (changeLog.isEmpty()) {
       return goodWindows;
     }
 
     ArrayList<TimeRange> optimalMeetingTimes = new ArrayList<TimeRange>();
-    TreeMap<Integer, Integer> changeLog = getChanges(optionalAttendeesFreeTimes);
-    int currAttendance = 0, bestAttendance = 0, prevTime = 0, currentGoodWindow = 0;
+    // TreeMap<Integer, Integer> changeLog = getChanges(optionalAttendeesFreeTimes);
+    int currAttendance = 0, bestAttendance = 0, prevTime = 0;
+    Set<Map.Entry<Integer, Integer>> entrySet =
+        (Set<Map.Entry<Integer, Integer>>) changeLog.entrySet();
 
-    for (Map.Entry e : changeLog.entrySet()) {
-
-      // The time spanned from prevTime to the current time before it is ahead of the current good
-      // window. Move onto next window.
-      if (prevTime >= goodWindows.get(currentGoodWindow).end()) {
-        currentGoodWindow++;
+    List<Map.Entry<Integer, Integer>> c = new ArrayList<Map.Entry<Integer, Integer>>(entrySet);
+    for (int j = 0, i = 0; i < c.size(); ++i) {
+      int t = (Integer) c.get(i).getKey();
+      j = Math.max(0, j - 1);
+      while (j < goodWindows.size() && goodWindows.get(j).start() < t) {
+        bestAttendance =
+            updateOptimalTimes(
+                TimeRange.fromStartEnd(
+                    Math.max(goodWindows.get(j).start(), prevTime),
+                    Math.min(goodWindows.get(j).end(), (Integer) c.get(i).getKey()),
+                    false),
+                bestAttendance,
+                currAttendance,
+                optimalMeetingTimes,
+                minTime);
+        j++;
       }
-
-      // All good windows have been considered.
-      if (currentGoodWindow >= goodWindows.size()) {
-        break;
-      }
-
-      bestAttendance =
-          updateOptimalTimes(
-              TimeRange.fromStartEnd(
-                  Math.max(goodWindows.get(currentGoodWindow).start(), prevTime),
-                  Math.min(goodWindows.get(currentGoodWindow).end(), (Integer) e.getKey()),
-                  false),
-              bestAttendance,
-              currAttendance,
-              optimalMeetingTimes,
-              minTime);
-
-      currAttendance += (Integer) e.getValue();
-      prevTime = (Integer) e.getKey();
+      prevTime = (Integer) c.get(i).getKey();
+      currAttendance += (Integer) c.get(i).getValue();
     }
-
-    // Do this so we don't access out of bounds later.
-    if (currentGoodWindow >= goodWindows.size()) {
-      return optimalMeetingTimes.isEmpty() ? goodWindows : optimalMeetingTimes;
-    }
-
-    bestAttendance =
-        updateOptimalTimes(
-            TimeRange.fromStartEnd(
-                Math.max(goodWindows.get(currentGoodWindow).start(), prevTime),
-                Math.min(goodWindows.get(currentGoodWindow).end(), TimeRange.END_OF_DAY),
-                true),
-            bestAttendance,
-            currAttendance,
-            optimalMeetingTimes,
-            minTime);
 
     // If there are no meeting times with at least one optional attendee, just return the good
     // windows.
     return optimalMeetingTimes.isEmpty() ? goodWindows : optimalMeetingTimes;
+  }
+
+  /**
+   * Returns a change log of how many optional attendees are available in at a certain time. Uses
+   * sweep-line algorithm.
+   *
+   * @param optionalAttendeesFreeTimes mapping of all attendees to their free times
+   */
+  private TreeMap<Integer, Integer> getChanges(
+      Collection<Event> events, HashSet<String> optionalAttendees) {
+    TreeMap<Integer, Integer> changes = new TreeMap<Integer, Integer>();
+    if (optionalAttendees.isEmpty()) return changes;
+    changes.put(
+        TimeRange.START_OF_DAY,
+        optionalAttendees.size()); // assume everyone is free at the start of the day
+    changes.put(TimeRange.END_OF_DAY + 1, -optionalAttendees.size());
+    for (Event event : events) {
+      int count = 0;
+      for (String attendee : optionalAttendees) {
+        if (event.getAttendees().contains(attendee)) {
+          count++;
+        }
+      }
+      if (count == 0) {
+        continue;
+      }
+      System.out.println(event.getWhen().toString() + "," + count);
+      int s = event.getWhen().start(), e = event.getWhen().end();
+      changes.put(s, changes.getOrDefault(s, 0) - count);
+      changes.put(e, changes.getOrDefault(e, 0) + count);
+    }
+
+    for (Map.Entry e : changes.entrySet()) {
+      System.out.println((Integer) e.getKey() + ": " + (Integer) e.getValue());
+    }
+
+    return changes;
   }
 
   /**
@@ -142,6 +159,7 @@ public final class FindMeetingQuery {
       int currAttendance,
       ArrayList<TimeRange> optimalMeetingTimes,
       long minTime) {
+    System.out.println(bestAttendance + " vs. " + currAttendance + "," + time.duration());
     if (time.duration() >= minTime) {
 
       // Clear out all former optimal meeting times. They aren't the most optimal anymore.
@@ -154,81 +172,6 @@ public final class FindMeetingQuery {
       }
     }
     return bestAttendance;
-  }
-
-  /**
-   * Returns a change log of how many optional attendees are available in at a certain time. Uses
-   * sweep-line algorithm.
-   *
-   * @param optionalAttendeesFreeTimes mapping of all attendees to their free times
-   */
-  private TreeMap<Integer, Integer> getChanges(
-      HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes) {
-    TreeMap<Integer, Integer> changes = new TreeMap<Integer, Integer>();
-    for (Map.Entry e : optionalAttendeesFreeTimes.entrySet()) {
-      ArrayList<TimeRange> freeTimes = (ArrayList<TimeRange>) e.getValue();
-      for (TimeRange time : freeTimes) {
-        changes.put(time.start(), changes.getOrDefault(time.start(), 0) + 1);
-        changes.put(time.end(), changes.getOrDefault(time.end(), 0) - 1);
-      }
-    }
-    return changes;
-  }
-
-  /**
-   * Returns a mapping of each optional attendee to the time intervals they are free in a day.
-   *
-   * @param events all events to be considered.
-   * @param optionalAttendees all optional attendees to be considered
-   */
-  private HashMap<String, ArrayList<TimeRange>> getOptionalAttendeesFreeTimes(
-      Collection<Event> events, HashSet<String> optionalAttendees) {
-    HashMap<String, ArrayList<TimeRange>> times = new HashMap<String, ArrayList<TimeRange>>();
-    for (Event event : events) {
-      for (String attendee : optionalAttendees) {
-
-        // attendee is not going to this event
-        if (!event.getAttendees().contains(attendee)) {
-          continue;
-        }
-        times.putIfAbsent(attendee, new ArrayList<TimeRange>());
-        times.get(attendee).add(event.getWhen());
-      }
-    }
-    for (Map.Entry e : times.entrySet()) {
-      ArrayList<TimeRange> value = getComplement((ArrayList<TimeRange>) e.getValue());
-
-      // To save space, we change the range of times to its complement instead of adding to a new
-      // HashMap.
-      e.setValue(value);
-    }
-
-    // Remove attendees that have no free time (if they were busy the whole day).
-    times.entrySet().removeIf(e -> e.getValue().isEmpty());
-    return times;
-  }
-
-  /**
-   * Returns all times that don't overlap with the given times in a day.
-   *
-   * @param times non-overlapping intervals of times in a 24-hour day
-   */
-  private ArrayList<TimeRange> getComplement(ArrayList<TimeRange> times) {
-    Collections.sort(times, TimeRange.ORDER_BY_START);
-    ArrayList<TimeRange> res = new ArrayList<TimeRange>();
-
-    // end tracks the end of the last time period, and thus the beginning of the next one.
-    int end = TimeRange.START_OF_DAY;
-    for (TimeRange time : times) {
-      if (end < time.start()) {
-        res.add(TimeRange.fromStartEnd(end, time.start(), false));
-      }
-      end = time.end();
-    }
-    if (end <= TimeRange.END_OF_DAY) {
-      res.add(TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true));
-    }
-    return res;
   }
 
   /**
@@ -248,7 +191,9 @@ public final class FindMeetingQuery {
     // Need to check this so we don't access out of bounds when we add first gap.
     if (relevantEvents.isEmpty()) {
       addIfLongEnough(
-          TimeRange.fromStartEnd(0, TimeRange.END_OF_DAY, true), possibleMeetingTimes, request.getDuration());
+          TimeRange.fromStartEnd(0, TimeRange.END_OF_DAY, true),
+          possibleMeetingTimes,
+          request.getDuration());
       return possibleMeetingTimes;
     }
     Collections.sort(relevantEvents, ORDER_BY_START_ASC);
@@ -275,7 +220,9 @@ public final class FindMeetingQuery {
 
     // Add the last one we were tracking.
     addIfLongEnough(
-        TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true), possibleMeetingTimes, request.getDuration());
+        TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true),
+        possibleMeetingTimes,
+        request.getDuration());
     return possibleMeetingTimes;
   }
 

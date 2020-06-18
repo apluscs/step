@@ -548,7 +548,7 @@ public final class FindMeetingQueryTest {
   public void bothTypesOneLeftOut() {
     // Three optional attendees A, B, C. One mandatory attendee D.
     // One gap in which A, B, D can attend, another in which only C, D can attend. The former should
-    // be returned
+    // be returned.
     //
     // Events  : |--D--|             |---D---|
     //                 |---A----|
@@ -587,3 +587,5 @@ public final class FindMeetingQueryTest {
     Assert.assertEquals(expected, actual);
   }
 }
+
+// TODO: add more tests for start/ end of days, overlapping, nested, double booked
