@@ -666,8 +666,8 @@ public final class FindMeetingQueryTest {
     // One optional attendees A. One mandatory attendee C.
     // A's events should be counted as one. The first half of the day should be returned.
     //
-    // Events  : |--A--|        |---C--------|
-    //           |-------A------|
+    // Events  :         |--A--||---C--------|
+    //           |----A------|
     //
     // Day     : |---------------------------|
     // Options : |--------------|
@@ -676,15 +676,15 @@ public final class FindMeetingQueryTest {
         Arrays.asList(
             new Event(
                 "Event 1",
-                TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0900AM, false),
+                TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0830AM, false),
                 Arrays.asList(PERSON_A)),
             new Event(
                 "Event 2",
-                TimeRange.fromStartEnd(TIME_0800AM, TIME_0830AM, false),
+                TimeRange.fromStartEnd(TIME_0800AM, TIME_0930AM, false),
                 Arrays.asList(PERSON_A)),
             new Event(
                 "Event 3",
-                TimeRange.fromStartEnd(TIME_0900AM, TIME_1230PM, false),
+                TimeRange.fromStartEnd(TIME_0930AM, TimeRange.END_OF_DAY, true),
                 Arrays.asList(PERSON_C)));
 
     MeetingRequest request = new MeetingRequest(Arrays.asList(PERSON_C), DURATION_30_MINUTES);
@@ -692,7 +692,7 @@ public final class FindMeetingQueryTest {
 
     Collection<TimeRange> actual = query.query(events, request);
     Collection<TimeRange> expected =
-        Arrays.asList(TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_1230PM, false));
+        Arrays.asList(TimeRange.fromStartEnd(TimeRange.START_OF_DAY, TIME_0930AM, false));
     Assert.assertEquals(expected, actual);
   }
 }
