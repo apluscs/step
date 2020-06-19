@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.stream.Collectors;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -50,12 +51,22 @@ public final class FindMeetingQuery {
     // to be
     private final MeetingRequest request;
 
-    //
     private ArrayList<TimeRange> optimalMeetingTimes = new ArrayList<TimeRange>();
+
+    // best attendance of optional attendees seen so far
+    private int bestAttendance;
+
+    // attendance optional attendees of current meeting
+    private int currAttendance;
+
+    // minimum meeting time
+    private long minTime;
 
     SingleMeetingResolver(Collection<Event> events, MeetingRequest request) {
       this.events = events;
       this.request = request;
+      this.bestAttendance = this.currAttendance = 0;
+      this.minTime = request.getDuration();
     }
 
     /**
@@ -65,15 +76,11 @@ public final class FindMeetingQuery {
      */
     Collection<TimeRange> resolveBestTime() {
       ArrayList<TimeRange> mandatoryAttendeesMeetingTimes =
-          getMandatoryAttendeesMeetingTimes(
-              request.getDuration(), new HashSet<String>(request.getAttendees()));
-      Collection<TimeRange> optimalMeetingTimes =
-          getOptimalMeetingTimes(
-              mandatoryAttendeesMeetingTimes,
-              getChangesInOptionalAttendeesAttendance(
-                  getOptionalAttendeesFreeTimes(
-                      new HashSet<String>(request.getOptionalAttendees()), request.getDuration())),
-              request.getDuration());
+          getMandatoryAttendeesMeetingTimes(new HashSet<String>(request.getAttendees()));
+      getOptimalMeetingTimes(
+          mandatoryAttendeesMeetingTimes,
+          getChangesInOptionalAttendeesAttendance(
+              getOptionalAttendeesFreeTimes(new HashSet<String>(request.getOptionalAttendees()))));
 
       // If there are no meeting times with at least one optional attendee, just return
       // mandatoryAttendeesMeetingTimes.
@@ -86,59 +93,38 @@ public final class FindMeetingQuery {
      * Utilizes two pointers: one to mandatoryAttendeesMeetingTimes, one to changeLog.
      *
      * @param mandatoryAttendeesMeetingTimes all meeting times satisfying mandatory attendees
-     * @param changeLog a change log of the number of available optional attendees over time
-     * @param minTime the minimum time a meeting must last for
+     * @param changes a change log of the number of available optional attendees over time
      */
-    private Collection<TimeRange> getOptimalMeetingTimes(
-        ArrayList<TimeRange> mandatoryAttendeesMeetingTimes,
-        TreeMap<Integer, Integer> changes,
-        long minTime) {
-
-      ArrayList<TimeRange> optimalMeetingTimes = new ArrayList<TimeRange>();
-      ArrayList<Map.Entry<Integer, Integer>> changeLog =
-          new ArrayList<Map.Entry<Integer, Integer>>(changes.entrySet());
-
-      // changeLogIndexis a pointer in changeLog,  mandatoryAttendeesMeetingTimesIndex is a pointer
-      // in mandatoryAttendeesMeetingTimes.
-      int mandatoryAttendeesMeetingTimesIndex = 0,
-          currAttendance = 0,
-          bestAttendance = 0,
-          prevTime = 0;
-      for (int changeLogIndex = 0; changeLogIndex < changeLog.size(); ++changeLogIndex) {
-        // Need to back up  mandatoryAttendeesMeetingTimesIndex in case we missed a time range in
-        // mandatoryAttendeesMeetingTimes.
-        mandatoryAttendeesMeetingTimesIndex = Math.max(0, mandatoryAttendeesMeetingTimesIndex - 1);
-
-        // Compares time range from previous time in changeLog to current time in changeLog
-        // mandatoryAttendeesMeetingTimes that overlap with this time range.
-        for (;
+    private void getOptimalMeetingTimes(
+        ArrayList<TimeRange> mandatoryAttendeesMeetingTimes, TreeMap<Integer, Integer> changes) {
+      int mandatoryAttendeesMeetingTimesIndex = 0, prevTime = 0;
+      for (Map.Entry changeEntry : changes.entrySet()) {
+        // First need to back up  mandatoryAttendeesMeetingTimesIndex in case we missed a time range
+        // in
+        // mandatoryAttendeesMeetingTimes. Then Compares time range from previous time in changeLog
+        // to current time in changeLog with mandatoryAttendeesMeetingTimes that overlap with this
+        // time range.
+        for (mandatoryAttendeesMeetingTimesIndex =
+                Math.max(0, mandatoryAttendeesMeetingTimesIndex - 1);
             mandatoryAttendeesMeetingTimesIndex < mandatoryAttendeesMeetingTimes.size()
                 && mandatoryAttendeesMeetingTimes.get(mandatoryAttendeesMeetingTimesIndex).start()
-                    < (Integer) changeLog.get(changeLogIndex).getKey();
+                    < (Integer) changeEntry.getKey();
             mandatoryAttendeesMeetingTimesIndex++) {
-          bestAttendance =
-              updateOptimalTimes(
-                  TimeRange.fromStartEnd(
-                      Math.max(
-                          mandatoryAttendeesMeetingTimes
-                              .get(mandatoryAttendeesMeetingTimesIndex)
-                              .start(),
-                          prevTime),
-                      Math.min(
-                          mandatoryAttendeesMeetingTimes
-                              .get(mandatoryAttendeesMeetingTimesIndex)
-                              .end(),
-                          (Integer) changeLog.get(changeLogIndex).getKey()),
-                      false),
-                  bestAttendance,
-                  currAttendance,
-                  minTime,
-                  optimalMeetingTimes);
+          updateOptimalTimes(
+              TimeRange.fromStartEnd(
+                  Math.max(
+                      mandatoryAttendeesMeetingTimes
+                          .get(mandatoryAttendeesMeetingTimesIndex)
+                          .start(),
+                      prevTime),
+                  Math.min(
+                      mandatoryAttendeesMeetingTimes.get(mandatoryAttendeesMeetingTimesIndex).end(),
+                      (Integer) changeEntry.getKey()),
+                  false));
         }
-        prevTime = (Integer) changeLog.get(changeLogIndex).getKey();
-        currAttendance += (Integer) changeLog.get(changeLogIndex).getValue();
+        prevTime = (Integer) changeEntry.getKey();
+        currAttendance += (Integer) changeEntry.getValue();
       }
-      return optimalMeetingTimes;
     }
 
     /**
@@ -146,10 +132,9 @@ public final class FindMeetingQuery {
      *
      * @param events all events to be considered
      * @param optionalAttendees everyone who needs to attend this meeting
-     * @param minTime minimum length of time for meeting
      */
     private HashMap<String, ArrayList<TimeRange>> getOptionalAttendeesFreeTimes(
-        HashSet<String> optionalAttendees, long minTime) {
+        HashSet<String> optionalAttendees) {
       HashMap<String, ArrayList<TimeRange>> times = new HashMap<String, ArrayList<TimeRange>>();
       for (String attendee : optionalAttendees) {
         HashSet<String> attendeeSet = new HashSet<String>();
@@ -157,7 +142,7 @@ public final class FindMeetingQuery {
 
         // Find all possible meeting times for just this one attendee. Must do this to deal with
         // double bookings.
-        times.put(attendee, getMandatoryAttendeesMeetingTimes(minTime, attendeeSet));
+        times.put(attendee, getMandatoryAttendeesMeetingTimes(attendeeSet));
       }
       return times;
     }
@@ -184,20 +169,10 @@ public final class FindMeetingQuery {
      * Updates optimalMeetingTimes based on current meeting time's attendance.
      *
      * @param time current meeting time range
-     * @param bestAttendance best attendance of optional attendees seen so far
-     * @param currAttendance attendance optional attendees of current meeting
-     * @param minTime minimum meeting time
-     * @param optimalMeetingTimes all meetings times with best optional attendees attendance we've
-     *     encountered so far
      */
-    private int updateOptimalTimes(
-        TimeRange time,
-        int bestAttendance,
-        int currAttendance,
-        long minTime,
-        ArrayList<TimeRange> optimalMeetingTimes) {
+    private void updateOptimalTimes(TimeRange time) {
       if (time.duration() < minTime) {
-        return bestAttendance;
+        return;
       }
 
       // Clear out all former optimal meeting times. They aren't the most optimal anymore.
@@ -208,25 +183,23 @@ public final class FindMeetingQuery {
       if (currAttendance == bestAttendance) {
         optimalMeetingTimes.add(time);
       }
-      return bestAttendance;
     }
 
     /**
      * Returns all meeting times that satisfy all mandatory attendees of request. Sorted in
      * ascending order.
      *
-     * @param minTime minimum length of time for meeting
      * @param mandatoryAttendees everyone who needs to attend this meeting
      */
     private ArrayList<TimeRange> getMandatoryAttendeesMeetingTimes(
-        long minTime, HashSet<String> mandatoryAttendees) {
+        HashSet<String> mandatoryAttendees) {
       ArrayList<Event> relevantEvents = getRelevantEvents(mandatoryAttendees);
       ArrayList<TimeRange> possibleMeetingTimes = new ArrayList<TimeRange>();
 
       // Need to check this so we don't access out of bounds when we add first gap.
       if (relevantEvents.isEmpty()) {
         addIfLongEnough(
-            TimeRange.fromStartEnd(0, TimeRange.END_OF_DAY, true), possibleMeetingTimes, minTime);
+            TimeRange.fromStartEnd(0, TimeRange.END_OF_DAY, true), possibleMeetingTimes);
         return possibleMeetingTimes;
       }
       Collections.sort(relevantEvents, ORDER_BY_START_ASC);
@@ -234,8 +207,7 @@ public final class FindMeetingQuery {
       // Add first gap.
       addIfLongEnough(
           TimeRange.fromStartEnd(0, relevantEvents.get(0).getWhen().start(), false),
-          possibleMeetingTimes,
-          minTime);
+          possibleMeetingTimes);
       int end = relevantEvents.get(0).getWhen().end();
       for (Event event : relevantEvents) {
         // event can be merged with current time range
@@ -245,15 +217,13 @@ public final class FindMeetingQuery {
         }
         // Add the time range we were tracking, start a new one from event.
         addIfLongEnough(
-            TimeRange.fromStartEnd(end, event.getWhen().start(), false),
-            possibleMeetingTimes,
-            minTime);
+            TimeRange.fromStartEnd(end, event.getWhen().start(), false), possibleMeetingTimes);
         end = event.getWhen().end();
       }
 
       // Add the last one we were tracking.
       addIfLongEnough(
-          TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true), possibleMeetingTimes, minTime);
+          TimeRange.fromStartEnd(end, TimeRange.END_OF_DAY, true), possibleMeetingTimes);
       return possibleMeetingTimes;
     }
 
@@ -262,11 +232,9 @@ public final class FindMeetingQuery {
      *
      * @param range the range being considered
      * @param ranges the list of ranges >= meetingDuration
-     * @param meetingDuration the duration of meeting to be scheduled
      */
-    private static void addIfLongEnough(
-        TimeRange range, List<TimeRange> ranges, long meetingDuration) {
-      if (range.duration() >= meetingDuration) {
+    private void addIfLongEnough(TimeRange range, List<TimeRange> ranges) {
+      if (range.duration() >= minTime) {
         ranges.add(range);
       }
     }
@@ -276,23 +244,18 @@ public final class FindMeetingQuery {
      * meeting we are trying to schedule. More intuitively, an event is "relevant" if it is attended
      * by at least one "relevant" attendee.
      *
-     * @param requestAttendees the set of attendees attending the meeting ("relevant" people)
+     * @param relevantAttendees the set of attendees attending the meeting ("relevant" people)
      */
     private ArrayList<Event> getRelevantEvents(HashSet<String> relevantAttendees) {
-      ArrayList<Event> relevantEvents = new ArrayList<Event>();
-      for (Event event : events) {
-        boolean isRelevant = false;
-        for (String person : event.getAttendees()) {
-          if (relevantAttendees.contains(person)) {
-            isRelevant = true;
-            break;
-          }
-        }
-        if (isRelevant) {
-          relevantEvents.add(event);
-        }
-      }
-      return relevantEvents;
+      return new ArrayList<Event>(
+          events.stream()
+              .filter(
+                  e ->
+                      e.getAttendees().stream()
+                          .filter(relevantAttendees::contains)
+                          .findAny()
+                          .isPresent())
+              .collect(Collectors.toList()));
     }
   }
 
