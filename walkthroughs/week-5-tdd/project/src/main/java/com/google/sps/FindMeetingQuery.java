@@ -48,63 +48,72 @@ public final class FindMeetingQuery {
    *     long it needs to be
    */
   public Collection<TimeRange> query(Collection<Event> events, MeetingRequest request) {
-    return getOptimalMeetingTimes(
+    ArrayList<TimeRange> mandatoryAttendeesMeetingTimes =
         getMandatoryAttendeesMeetingTimes(
-            events, request.getDuration(), new HashSet<String>(request.getAttendees())),
-        getChanges(
-            getOptionalAttendeesFreeTimes(
-                events,
-                new HashSet<String>(request.getOptionalAttendees()),
-                request.getDuration())),
-        request.getDuration());
+            events, request.getDuration(), new HashSet<String>(request.getAttendees()));
+    Collection<TimeRange> optimalMeetingTimes =
+        getOptimalMeetingTimes(
+            mandatoryAttendeesMeetingTimes,
+            getChangesInOptionalAttendeesAttendance(
+                getOptionalAttendeesFreeTimes(
+                    events,
+                    new HashSet<String>(request.getOptionalAttendees()),
+                    request.getDuration())),
+            request.getDuration());
+
+    // If there are no meeting times with at least one optional attendee, just return
+    // mandatoryAttendeesMeetingTimes.
+    return optimalMeetingTimes.isEmpty() ? mandatoryAttendeesMeetingTimes : optimalMeetingTimes;
   }
 
   /**
    * Returns all meeting times that allow the most optional attendees to attend. These times must
-   * also fall in a good window and must be at least minTime long. Utilizes two pointers: one to
-   * goodWindows, one to changeLog.
+   * also fall in a time satisfying all mandatory attendees and must be at least minTime long.
+   * Utilizes two pointers: one to mandatoryAttendeesMeetingTimes, one to changeLog.
    *
-   * @param goodWindows all meeting times satisfying mandatory attendees
+   * @param mandatoryAttendeesMeetingTimes all meeting times satisfying mandatory attendees
    * @param changeLog a change log of the number of available optional attendees over time
    * @param minTime the minimum time a meeting must last for
    */
   private Collection<TimeRange> getOptimalMeetingTimes(
-      ArrayList<TimeRange> goodWindows,
-      ArrayList<Map.Entry<Integer, Integer>> changeLog,
+      ArrayList<TimeRange> mandatoryAttendeesMeetingTimes,
+      TreeMap<Integer, Integer> changes,
       long minTime) {
 
     ArrayList<TimeRange> optimalMeetingTimes = new ArrayList<TimeRange>();
+    ArrayList<Map.Entry<Integer, Integer>> changeLog =
+        new ArrayList<Map.Entry<Integer, Integer>>(changes.entrySet());
 
-    // i is a pointer in changeLog, j is a poitner in goodWindows.
-    for (int j = 0, i = 0, currAttendance = 0, bestAttendance = 0, prevTime = 0;
-        i < changeLog.size();
-        ++i) {
-      // Need to back up j in case we missed a good window.
-      j = Math.max(0, j - 1);
+    // changeLogIndexis a pointer in changeLog,  mandatoryAttendeesMeetingTimesIndex is a pointer in mandatoryAttendeesMeetingTimes.
+    int  mandatoryAttendeesMeetingTimesIndex = 0, currAttendance = 0, bestAttendance = 0, prevTime = 0;
+    for (int changeLogIndex = 0; changeLogIndex < changeLog.size(); ++changeLogIndex) {
+      // Need to back up  mandatoryAttendeesMeetingTimesIndex in case we missed a time range in mandatoryAttendeesMeetingTimes.
+       mandatoryAttendeesMeetingTimesIndex = Math.max(0,  mandatoryAttendeesMeetingTimesIndex - 1);
 
-      // Compares time range from changeLog[i-1] to changeLog[i] to all good windows
-      // that overlap with this time range.
-      while (j < goodWindows.size()
-          && goodWindows.get(j).start() < (Integer) changeLog.get(i).getKey()) {
+      // Compares time range from previous time in changeLog to current time in changeLog
+      // mandatoryAttendeesMeetingTimes that overlap with this time range.
+      for (;
+           mandatoryAttendeesMeetingTimesIndex < mandatoryAttendeesMeetingTimes.size()
+              && mandatoryAttendeesMeetingTimes.get( mandatoryAttendeesMeetingTimesIndex).start()
+                  < (Integer) changeLog.get(changeLogIndex).getKey();
+           mandatoryAttendeesMeetingTimesIndex++) {
         bestAttendance =
             updateOptimalTimes(
                 TimeRange.fromStartEnd(
-                    Math.max(goodWindows.get(j).start(), prevTime),
-                    Math.min(goodWindows.get(j).end(), (Integer) changeLog.get(i).getKey()),
+                    Math.max(mandatoryAttendeesMeetingTimes.get( mandatoryAttendeesMeetingTimesIndex).start(), prevTime),
+                    Math.min(
+                        mandatoryAttendeesMeetingTimes.get( mandatoryAttendeesMeetingTimesIndex).end(),
+                        (Integer) changeLog.get(changeLogIndex).getKey()),
                     false),
                 bestAttendance,
                 currAttendance,
-                optimalMeetingTimes,
-                minTime);
-        j++;
+                minTime,
+                optimalMeetingTimes);
       }
-      prevTime = (Integer) changeLog.get(i).getKey();
-      currAttendance += (Integer) changeLog.get(i).getValue();
+      prevTime = (Integer) changeLog.get(changeLogIndex).getKey();
+      currAttendance += (Integer) changeLog.get(changeLogIndex).getValue();
     }
-
-    // If there are no meeting times with at least one optional attendee, just return the good
-    // windows.
-    return optimalMeetingTimes.isEmpty() ? goodWindows : optimalMeetingTimes;
+    return optimalMeetingTimes;
   }
 
   /**
@@ -134,7 +143,7 @@ public final class FindMeetingQuery {
    *
    * @param optionalAttendeesFreeTimes mapping of all attendees to their free times
    */
-  private ArrayList<Map.Entry<Integer, Integer>> getChanges(
+  private TreeMap<Integer, Integer> getChangesInOptionalAttendeesAttendance(
       HashMap<String, ArrayList<TimeRange>> optionalAttendeesFreeTimes) {
     TreeMap<Integer, Integer> changes = new TreeMap<Integer, Integer>();
     for (Map.Entry e : optionalAttendeesFreeTimes.entrySet()) {
@@ -143,7 +152,7 @@ public final class FindMeetingQuery {
         changes.put(time.end(), changes.getOrDefault(time.end(), 0) - 1);
       }
     }
-    return new ArrayList<Map.Entry<Integer, Integer>>(changes.entrySet());
+    return changes;
   }
 
   /**
@@ -152,25 +161,27 @@ public final class FindMeetingQuery {
    * @param time current meeting time range
    * @param bestAttendance best attendance of optional attendees seen so far
    * @param currAttendance attendance optional attendees of current meeting
-   * @param optionalAttendeesFreeTimes all attendees and their free times
    * @param minTime minimum meeting time
+   * @param optimalMeetingTimes all meetings times with best optional attendees attendance we've
+   *     encountered so far
    */
   private int updateOptimalTimes(
       TimeRange time,
       int bestAttendance,
       int currAttendance,
-      ArrayList<TimeRange> optimalMeetingTimes,
-      long minTime) {
-    if (time.duration() >= minTime) {
+      long minTime,
+      ArrayList<TimeRange> optimalMeetingTimes) {
+    if (time.duration() < minTime) {
+      return bestAttendance;
+    }
 
-      // Clear out all former optimal meeting times. They aren't the most optimal anymore.
-      if (currAttendance > bestAttendance) {
-        bestAttendance = currAttendance;
-        optimalMeetingTimes.clear();
-      }
-      if (currAttendance == bestAttendance) {
-        optimalMeetingTimes.add(time);
-      }
+    // Clear out all former optimal meeting times. They aren't the most optimal anymore.
+    if (currAttendance > bestAttendance) {
+      bestAttendance = currAttendance;
+      optimalMeetingTimes.clear();
+    }
+    if (currAttendance == bestAttendance) {
+      optimalMeetingTimes.add(time);
     }
     return bestAttendance;
   }
