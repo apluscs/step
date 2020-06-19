@@ -100,8 +100,7 @@ public final class FindMeetingQuery {
       int mandatoryAttendeesMeetingTimesIndex = 0, prevTime = 0;
       for (Map.Entry changeEntry : changes.entrySet()) {
         // First need to back up  mandatoryAttendeesMeetingTimesIndex in case we missed a time range
-        // in
-        // mandatoryAttendeesMeetingTimes. Then Compares time range from previous time in changeLog
+        // in mandatoryAttendeesMeetingTimes. Then compare time range from previous time in changeLog
         // to current time in changeLog with mandatoryAttendeesMeetingTimes that overlap with this
         // time range.
         for (mandatoryAttendeesMeetingTimesIndex =
@@ -130,7 +129,6 @@ public final class FindMeetingQuery {
     /**
      * Returns a mapping of optional attendees to their free times.
      *
-     * @param events all events to be considered
      * @param optionalAttendees everyone who needs to attend this meeting
      */
     private HashMap<String, ArrayList<TimeRange>> getOptionalAttendeesFreeTimes(
