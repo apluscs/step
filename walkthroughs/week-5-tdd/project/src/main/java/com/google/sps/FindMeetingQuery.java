@@ -48,7 +48,7 @@ public final class FindMeetingQuery {
     private final Collection<Event> events;
 
     /* request contains information about the meeting, including attendees, optional attendees, and how long it needs to be.
-*/    private final MeetingRequest request;
+     */ private final MeetingRequest request;
     private ArrayList<TimeRange> optimalMeetingTimes = new ArrayList<TimeRange>();
     private long minMeetingDuration;
 
@@ -87,32 +87,32 @@ public final class FindMeetingQuery {
      */
     private void getOptimalMeetingTimes(
         ArrayList<TimeRange> mandatoryAttendeesMeetingTimes, TreeMap<Integer, Integer> changes) {
-      int j = 0,
+      int mandatoryAttendeesMeetingTimesIndex = 0,
           prevTime = 0,
           bestAttendance = 0,
           currAttendance = 0;
       for (Map.Entry changeEntry : changes.entrySet()) {
-        // First need to back up  j in case we missed a time range
-        // in mandatoryAttendeesMeetingTimes. Then compare time range from previous time in
-        // changeLog to current time in changeLog with mandatoryAttendeesMeetingTimes that overlap
-        // with this time range.
-        for (j =
-                Math.max(0, j - 1);
-            j < mandatoryAttendeesMeetingTimes.size()
-                && mandatoryAttendeesMeetingTimes.get(j).start()
-                    < (int) changeEntry.getKey();
-            j++) {
+        // First need to back up mandatoryAttendeesMeetingTimesIndex in case we missed a time range
+        // in mandatoryAttendeesMeetingTimes.
+        mandatoryAttendeesMeetingTimesIndex = Math.max(0, mandatoryAttendeesMeetingTimesIndex - 1);
+
+        // Then compare time range from previous time in  changeLog to current time in changeLog
+        // with mandatoryAttendeesMeetingTimes that overlap with this time range.
+        while (mandatoryAttendeesMeetingTimesIndex < mandatoryAttendeesMeetingTimes.size()
+            && mandatoryAttendeesMeetingTimes.get(mandatoryAttendeesMeetingTimesIndex).start()
+                < (int) changeEntry.getKey()) {
           TimeRange meetingRange =
               TimeRange.fromStartEnd(
                   Math.max(
                       mandatoryAttendeesMeetingTimes
-                          .get(j)
+                          .get(mandatoryAttendeesMeetingTimesIndex)
                           .start(),
                       prevTime),
                   Math.min(
-                      mandatoryAttendeesMeetingTimes.get(j).end(),
+                      mandatoryAttendeesMeetingTimes.get(mandatoryAttendeesMeetingTimesIndex).end(),
                       (int) changeEntry.getKey()),
                   false);
+          mandatoryAttendeesMeetingTimesIndex++;
           if (meetingRange.duration() < minMeetingDuration) {
             continue;
           }
